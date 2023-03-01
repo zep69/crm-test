@@ -1,10 +1,22 @@
 <template>
-  <div id="nav">
-    <router-link to="/">Home</router-link> |
-    <router-link to="/about">About</router-link>
-  </div>
-  <router-view/>
+	<w-app>
+		<router-view/>
+	</w-app>
 </template>
+<script>
+
+export default {
+	data:()=>({
+		openDrawer:false,
+		items:[
+			{label:'Home', route:"/"},
+			{label: 'About', route:"/about"}
+		],
+		selected:null,
+	})
+}
+
+</script>
 
 <style>
 #app {
