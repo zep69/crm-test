@@ -2,13 +2,14 @@
   <div class="about">
     <h1>This is an about page</h1>
   </div>
+
 	<w-flex wrap>
 		<!--  -->
 		<div class="xs3 pal pa2" >
 			<w-card title="Hueta" style="border-radius: 1rem">
-				<w-list :items="items" hover>
+				<w-list :items="items">
 					<template #item="{ item }">
-						<w-button text color="blue" @click="kaki=item.kaki">
+						<w-button text color="blue" lg  @click="kaki=item.kaki">
 							<w-icon class="mr1" md>{{item.icon}}</w-icon>
 							{{item.label}}
 						</w-button>
@@ -18,10 +19,31 @@
 		</div>
 			<div class="xs9 pal pa2">
 				<w-card title="Задачи" v-if="kaki==='task'">
-					<w-tabs :items="tabs" card>
+					<w-tabs :items="tabs" card transition="slide-fade-down">
 						<template #item-title="{item}">
 							<w-icon :class="item.color" >{{ item.icon }}</w-icon>
 							<span :class="item.color">{{item.title}}</span>
+						</template>
+						<template #item-content="{item}">
+								<vue-good-table
+										:columns="item.headers"
+										:rows="item.data"
+										v-on:row-click="onRowClick"
+										:search-options="{enabled: true, trigger: 'enter' }"
+
+								/>
+
+							<w-dialog
+									v-model="dialogTask"
+							>
+								<template #title>
+									<w-icon md> {{item.icon}}</w-icon>
+									{{item.title}}
+								</template>
+								<h3>First name: </h3><span>{{selectRow.firstName}}</span>
+								<br>
+								<h3>Second name: </h3><span>{{selectRow.lastName}}</span>
+							</w-dialog>
 						</template>
 					</w-tabs>
 				</w-card>
@@ -66,12 +88,70 @@
 </template>
 
 <script>
+
 export default {
+	components:{
+
+	},
 	data:()=>({
+		dialogTask:false,
+		selectRow:{
+			id:null,
+			firstName:null,
+			lastName:null,
+		},
+		selectIndex:null,
+		headers:[
+			{ label: 'ID', field: 'id' },
+			{ label: 'First name', field: 'firstName' },
+			{ label: 'Last name', field: 'lastName' }
+		],
+		data:[
+			{ id: 1, firstName: 'Floretta', lastName: 'Sampson' },
+			{ id: 2, firstName: 'Nellie', lastName: 'Lynn' },
+			{ id: 3, firstName: 'Rory', lastName: 'Bristol' },
+			{ id: 4, firstName: 'Daley', lastName: 'Elliott' },
+			{ id: 5, firstName: 'Virgil', lastName: 'Carman' }
+		],
 		tabs:[
-			{title:'Текущие задачи',color:'blue', icon:"mdi mdi-progress-clock"},
-			{title:'Выполненные',color:'green', icon:"mdi mdi-progress-check"},
-			{title:'Отклоненные/Просроченные',color:'red', icon:'mdi mdi-progress-close'}
+			{title:'Текущие задачи',color:'blue', icon:"mdi mdi-progress-clock",
+				headers:[
+					{ label: 'ID', field: 'id' },
+					{ label: 'First name', field: 'firstName' },
+					{ label: 'Last name', field: 'lastName' }
+				],
+				data:[
+					{ id: 1, firstName: 'Floretta', lastName: 'Sampson' },
+					{ id: 2, firstName: 'Nellie', lastName: 'Lynn' },
+					{ id: 3, firstName: 'Rory', lastName: 'Bristol' },
+					{ id: 4, firstName: 'Daley', lastName: 'Elliott' },
+					{ id: 5, firstName: 'Virgil', lastName: 'Carman' }
+				]
+			},
+			{title:'Выполненные',color:'green', icon:"mdi mdi-progress-check", headers:[
+					{ label: 'ID', field: 'id' },
+					{ label: 'First name', field: 'firstName' },
+					{ label: 'Last name', field: 'lastName' }
+				],
+				data:[
+					{ id: 1, firstName: 'F23loretta', lastName: 'Sampson' },
+					{ id: 2, firstName: 'Nel2lie', lastName: 'Lynn' },
+					{ id: 3, firstName: 'Rory12', lastName: 'Bristol' },
+					{ id: 4, firstName: 'Dal255ey', lastName: 'Elliott' },
+					{ id: 5, firstName: 'Vir22gil121', lastName: 'Carman' }
+				]},
+			{title:'Отклоненные/Просроченные',color:'red', icon:'mdi mdi-progress-close', headers:[
+					{ label: 'ID', field: 'id' },
+					{ label: 'First name', field: 'firstName' },
+					{ label: 'Last name', field: 'lastName' }
+				],
+				data:[
+					{ id: 1, firstName: 'F23lo@retta', lastName: 'S@@ampson' },
+					{ id: 2, firstName: 'Nel@@2lie', lastName: 'Ly@nn' },
+					{ id: 3, firstName: 'Rory12', lastName: 'Br@@istol' },
+					{ id: 4, firstName: 'Dal255@@ey', lastName: 'Elliot$#@t!@@' },
+					{ id: 5, firstName: 'Vir22gil@@@121', lastName: 'C@@@@arman' }
+				]}
 		],
 		kaki:'task',
 		items:[
@@ -80,14 +160,20 @@ export default {
 			{label:'Какашки',icon:'mdi mdi-emoticon-poop', kaki:'da'},
 		],
 		kakashonki:[
-			{name:'Олег Какашечкиc', img:'https://s3.timeweb.com/cd58536-mhand-bucket/avatar/tRmrR28uzmY.jpg', discription:'Мега какашечник постоянно врет, говорит что портал не работает, чем вводит в заблуждение всех. Ещё громка пердит и не сознается в этом', telega:'https://t.me/mhand_ak', number:'+79966237451', mail:'ad@mhand.ru'},
+			{name:'Олег Какашечкиc', img:'https://s3.timeweb.com/cd58536-mhand-bucket/avatar/tRmrR28uzmY.jpg', discription:'Мега какашечник постоянно врет, говорит что портал не работает, чем вводит в заблуждение всех. Ещё громка пердит и не сознается в этом', telega:'https://t.me/mhand_ak', number:'+79966237451', mail:'ak@mhand.ru'},
 			{name:'Жорчик Какашетрян', img:'https://s3.timeweb.com/cd58536-mhand-bucket/avatar/photo_2023-01-10_12-03-02.jpg', discription:'Попал под влияние Олега Какашечкиcа и тоже начал вводить в заблуждение окружающих', telega:'https://t.me/megahendsupport', number:'+79991726381', mail:'stp1@mhand.ru'}
 		]
 	}),
 	methods:{
 		clickToLink(link){
 			window.open(link,"_blanc")
-		}
+		},
+		onRowClick(params){
+			this.selectIndex = params.row
+			this.selectRow = Object.assign({}, this.selectIndex)
+			this.dialogTask=true
+			console.log(this.selectRow)
+		},
 	}
 }
 </script>
