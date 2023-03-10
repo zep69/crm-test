@@ -1,18 +1,15 @@
 <template>
-	<w-app>
+
 		<router-view/>
-	</w-app>
+
 </template>
 <script>
 
 export default {
 	data:()=>({
 		openDrawer:false,
-		items:[
-			{label:'Home', route:"/"},
-			{label: 'About', route:"/about"}
-		],
 		selected:null,
+
 	})
 }
 

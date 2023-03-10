@@ -16,9 +16,10 @@ app.use(store)
 app.use(router)
 app.use(VueGoodTablePlugin);
 
-new WaveUI(app, {
-	// Some Wave UI options.
-})
 
+app.use(WaveUI, {
+})
 app.mount('#app')
+
+
 

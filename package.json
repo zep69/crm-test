@@ -10,11 +10,12 @@
     "@mdi/font": "^7.1.96",
     "core-js": "^3.6.5",
     "vue": "^3.0.0",
+    "vue-cal": "^4.8.1",
     "vue-good-table": "^2.21.11",
     "vue-good-table-next": "^0.2.1",
     "vue-router": "^4.0.0-0",
     "vuex": "^4.0.0-0",
-    "wave-ui": "^2.48.0"
+    "wave-ui": "^3.0.0"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "~4.5.15",

@@ -1,15 +1,14 @@
 <template>
   <div class="about">
-    <h1>This is an about page</h1>
   </div>
 
 	<w-flex wrap>
 		<!--  -->
-		<div class="xs3 pal pa2" >
-			<w-card title="Hueta" style="border-radius: 1rem">
+		<div class="xs2 pal pa2" >
+			<w-card color="primary" title="Вкладки" style="border-radius: 1rem">
 				<w-list :items="items">
 					<template #item="{ item }">
-						<w-button text color="blue" lg  @click="kaki=item.kaki">
+						<w-button text  lg  @click="kaki=item.kaki" :color="item.color">
 							<w-icon class="mr1" md>{{item.icon}}</w-icon>
 							{{item.label}}
 						</w-button>
@@ -17,8 +16,14 @@
 				</w-list>
 			</w-card>
 		</div>
-			<div class="xs9 pal pa2">
-				<w-card title="Задачи" v-if="kaki==='task'">
+			<div class="xs10 pal pa2">
+				<w-card color="primary"  v-if="kaki==='task'">
+					<template #title>
+						<span>Задачи</span>
+						<div class="spacer"></div>
+						<!-- <w-button color="primary">Поставить задачу</w-button> -->
+						<Dialogs type="task"/>
+					</template>
 					<w-tabs :items="tabs" card transition="slide-fade-down">
 						<template #item-title="{item}">
 							<w-icon :class="item.color" >{{ item.icon }}</w-icon>
@@ -28,27 +33,84 @@
 								<vue-good-table
 										:columns="item.headers"
 										:rows="item.data"
-										v-on:row-click="onRowClick"
+										v-on:row-dblclick="onRowClick"
 										:search-options="{enabled: true, trigger: 'enter' }"
-
-								/>
+										:theme="tabTheme"
+								>
+									<template #table-row="props">
+										<div v-if="props.column.field=='progress'">
+											<w-progress size="4em" circle :stroke="8" v-model="props.row.progress">
+												<strong>{{ props.row.progress }}%</strong>
+											</w-progress>
+										</div>
+									</template>
+								</vue-good-table>
 
 							<w-dialog
 									v-model="dialogTask"
+									width="1000px"
 							>
 								<template #title>
 									<w-icon md> {{item.icon}}</w-icon>
 									{{item.title}}
+									<div class="spacer">
+									</div>
+									<w-button lg text @click="dialogTask=false">
+										<w-icon md>mdi mdi-close-circle</w-icon>
+									</w-button>
 								</template>
-								<h3>First name: </h3><span>{{selectRow.firstName}}</span>
-								<br>
-								<h3>Second name: </h3><span>{{selectRow.lastName}}</span>
+								<template #default>
+									<div style="display: flex; justify-content: start">
+										<h3>Задача от: </h3><span>{{selectRow.firstName}}</span>
+									</div>
+									<div style="display: flex; justify-content: start">
+										<h3>Задача: </h3><span>{{selectRow.task}}</span>
+									</div>
+									<div style="display: flex; justify-content: start">
+										<w-textarea label="Описание задачи" label-position="left" class="mt2" readonly outline :model-value="selectRow.discription"></w-textarea>
+									</div>
+									<w-divider class="ma3" color="green"/>
+									<div style="display: flex; justify-content: center">
+										<h3>Ход выполнения</h3>
+									</div>
+									<div style="display: flex">
+										<div class="xs3 pa2">
+											<w-card title="Список">
+												<template #default>
+													<w-checkboxes :items="selectRow.checkboxes" v-model="selectRow.selected"></w-checkboxes>
+													<w-divider color="blue" class="ma2"/>
+													<w-button text color="blue"><w-icon>mdi mdi-plus</w-icon> Добавить пункт </w-button>
+												</template>
+											</w-card>
+										</div>
+										<div class="xs9 pa2">
+											<w-card title="Заметки выполнения">
+												<template #default>
+													<w-textarea outline></w-textarea>
+												</template>
+											</w-card>
+
+										</div>
+										<div class="xs3 pa2">
+											<w-card title="Сменить статус">
+
+												<w-select :items="statuses"></w-select>
+
+											</w-card>
+										</div>
+
+									</div>
+								</template>
+								<template #actions>
+									<div class="spacer"></div>
+									<w-button color="black" bg-color="green">Подтвердить изменения </w-button>
+								</template>
 							</w-dialog>
 						</template>
 					</w-tabs>
 				</w-card>
 
-				<w-card title="МЕГА КАКАШКИ" v-if="kaki==='da'">
+				<w-card title="Сотрудники Компании" v-if="kaki==='da'">
 					<div v-for="item in kakashonki">
 						<w-card class="mt2" :title="item.name" style="border-radius: 1rem">
 							<w-flex class="row align-center justify-start">
@@ -81,6 +143,10 @@
 
 					</div>
 				</w-card>
+
+				<w-card title="Планировщик" disabled v-if="kaki==='calendar'">
+					<vue-cal style="height: 500px"></vue-cal>
+				</w-card>
 			</div>
 
 
@@ -88,44 +154,61 @@
 </template>
 
 <script>
-
+import VueCal from 'vue-cal'
+import 'vue-cal/dist/vuecal.css'
+import Dialogs from "../../components/Dialogs";
 export default {
 	components:{
-
+		Dialogs,
+		VueCal
 	},
 	data:()=>({
 		dialogTask:false,
+		tabTheme:'default',
 		selectRow:{
 			id:null,
 			firstName:null,
 			lastName:null,
 		},
+		statuses:[
+			{label:'На обсуждении'},
+			{label:'Выполняется'},
+			{label:'Приостановлена'},
+			{label:'Выполнена, ожидает подтверждения'},
+			{label:'На согласовании'},
+		],
 		selectIndex:null,
 		headers:[
-			{ label: 'ID', field: 'id' },
-			{ label: 'First name', field: 'firstName' },
-			{ label: 'Last name', field: 'lastName' }
+			{ label: 'Номер задачи', field: 'id' },
+			{ label: 'От кого', field: 'firstName' },
+			{ label:'Дата постановки задачи', field: 'dateIn'},
+			{label:'Дэдлайн задачи', field:'deadline'}
 		],
 		data:[
-			{ id: 1, firstName: 'Floretta', lastName: 'Sampson' },
-			{ id: 2, firstName: 'Nellie', lastName: 'Lynn' },
-			{ id: 3, firstName: 'Rory', lastName: 'Bristol' },
-			{ id: 4, firstName: 'Daley', lastName: 'Elliott' },
-			{ id: 5, firstName: 'Virgil', lastName: 'Carman' }
+			{ id: 1, firstName: 'Floretta', lastName: 'Sampson', dateIn: new Date().toLocaleString().substr(0,10), deadline:new Date(2023, 4,15).toLocaleTimeString().substr(0,10) },
+			{ id: 2, firstName: 'Nellie', lastName: 'Lynn' ,dateIn: new Date().toLocaleString().substr(0,10), deadline:new Date(2023, 4,15).toLocaleTimeString().substr(0,10)},
+			{ id: 3, firstName: 'Rory', lastName: 'Bristol', dateIn: new Date().toLocaleString().substr(0,10), deadline:new Date(2023, 4,15).toLocaleTimeString().substr(0,10) },
+			{ id: 4, firstName: 'Daley', lastName: 'Elliott', dateIn: new Date().toLocaleString().substr(0,10), deadline:new Date(2023, 4,15).toLocaleTimeString().substr(0,10) },
+			{ id: 5, firstName: 'Virgil', lastName: 'Carman', dateIn: new Date().toLocaleString().substr(0,10), deadline:new Date(2023, 4,15).toLocaleTimeString().substr(0,10) }
 		],
 		tabs:[
 			{title:'Текущие задачи',color:'blue', icon:"mdi mdi-progress-clock",
 				headers:[
-					{ label: 'ID', field: 'id' },
-					{ label: 'First name', field: 'firstName' },
-					{ label: 'Last name', field: 'lastName' }
+					{ label: 'Номер задачи', field: 'id', width:'90px' },
+					{ label:'Задача', field:'task' },
+					{ label: 'От кого', field: 'firstName', width:'200px' },
+					{ label:'Дата постановки задачи', field: 'dateIn', width:'130px' },
+					{ label:'Дэдлайн задачи', field:'deadline',width:'100px' },
+					{label:'Статус', field:'status',width:'100px'  },
+					{ label: 'Прогресс задачи', field: 'progress',width:'100px' },
+
 				],
 				data:[
-					{ id: 1, firstName: 'Floretta', lastName: 'Sampson' },
-					{ id: 2, firstName: 'Nellie', lastName: 'Lynn' },
-					{ id: 3, firstName: 'Rory', lastName: 'Bristol' },
-					{ id: 4, firstName: 'Daley', lastName: 'Elliott' },
-					{ id: 5, firstName: 'Virgil', lastName: 'Carman' }
+					{ id: 1, firstName: 'Floretta', task:'Lorem Ipsum - это текст-"рыба", часто используемый в печати и вэб-дизайне. Lorem Ipsum является стандартной "рыбой" для текстов на латинице с начала XVI века.',checkboxes:[{label:'sdadasda',value:1},{label:'alhdkbda',value:2}], selected:[1], status:'На обсуждении', discription:'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.', dateIn: new Date().toLocaleString().substr(0,10), deadline:new Date(2023, 4,15).toLocaleString().substr(0,10), progress:50 },
+					{ id: 2, firstName: 'Nellie' , task:'Lorem Ipsum - это текст-"рыба", часто используемый в печати и вэб-дизайне. Lorem Ipsum является стандартной "рыбой" для текстов на латинице с начала XVI века.', status:'Выполняется',dateIn: new Date().toLocaleString().substr(0,10), deadline:new Date(2023, 4,15).toLocaleString().substr(0,10), progress:20},
+					{ id: 3, firstName: 'Rory', task:'Lorem Ipsum - это текст-"рыба", часто используемый в печати и вэб-дизайне. Lorem Ipsum является стандартной "рыбой" для текстов на латинице с начала XVI века.', status:'Приостановлена', dateIn: new Date().toLocaleString().substr(0,10), deadline:new Date(2023, 4,15).toLocaleString().substr(0,10), progress:26 },
+					{ id: 4, firstName: 'Daley', task:'Lorem Ipsum - это текст-"рыба", часто используемый в печати и вэб-дизайне. Lorem Ipsum является стандартной "рыбой" для текстов на латинице с начала XVI века.', status:'Выполнена, ожидает подтверждения', dateIn: new Date().toLocaleString().substr(0,10), deadline:new Date(2023, 4,15).toLocaleString().substr(0,10),progress:74 },
+					{ id: 5, firstName: 'Virgil', task:'Lorem Ipsum - это текст-"рыба", часто используемый в печати и вэб-дизайне. Lorem Ipsum является стандартной "рыбой" для текстов на латинице с начала XVI века.',status:'На согласовании', dateIn: new Date().toLocaleString().substr(0,10), deadline:new Date(2023, 4,15).toLocaleString().substr(0,10), progress:90 }
 				]
 			},
 			{title:'Выполненные',color:'green', icon:"mdi mdi-progress-check", headers:[
@@ -155,15 +238,36 @@ export default {
 		],
 		kaki:'task',
 		items:[
-			{label:'Задачи', icon:'mdi mdi-check', kaki:'task'},
-			{label:'Заявки', icon:'mdi mdi-format-list-bulleted', kaki:'appl'},
-			{label:'Какашки',icon:'mdi mdi-emoticon-poop', kaki:'da'},
+			{label:'Задачи', icon:'mdi mdi-check', kaki:'task', color:'primary'},
+			{label:'Заявки', icon:'mdi mdi-format-list-bulleted', kaki:'appl', color:'red'},
+			{label:'Компания',icon:'mdi mdi-office-building-outline', kaki:'da', color:'orange'},
+			{label: 'Планировщик', icon:'mdi mdi-calendar-clock', kaki: 'calendar', color:'red'}
 		],
 		kakashonki:[
-			{name:'Олег Какашечкиc', img:'https://s3.timeweb.com/cd58536-mhand-bucket/avatar/tRmrR28uzmY.jpg', discription:'Мега какашечник постоянно врет, говорит что портал не работает, чем вводит в заблуждение всех. Ещё громка пердит и не сознается в этом', telega:'https://t.me/mhand_ak', number:'+79966237451', mail:'ak@mhand.ru'},
-			{name:'Жорчик Какашетрян', img:'https://s3.timeweb.com/cd58536-mhand-bucket/avatar/photo_2023-01-10_12-03-02.jpg', discription:'Попал под влияние Олега Какашечкиcа и тоже начал вводить в заблуждение окружающих', telega:'https://t.me/megahendsupport', number:'+79991726381', mail:'stp1@mhand.ru'}
+			{name:'Олег Петкунас', img:'https://s3.timeweb.com/cd58536-mhand-bucket/avatar/tRmrR28uzmY.jpg', discription:'Lorem Ipsum - это текст-"рыба", часто используемый в печати и вэб-дизайне. Lorem Ipsum является стандартной "рыбой" для текстов на латинице с начала XVI века. ', telega:'https://t.me/mhand_ak', number:'+79966237451', mail:'ak@mhand.ru'},
+			{name:'Георгий Хачатрян', img:'https://s3.timeweb.com/cd58536-mhand-bucket/avatar/photo_2023-01-10_12-03-02.jpg', discription:'Lorem Ipsum - это текст-"рыба", часто используемый в печати и вэб-дизайне. Lorem Ipsum является стандартной "рыбой" для текстов на латинице с начала XVI века.', telega:'https://t.me/megahendsupport', number:'+79991726381', mail:'stp1@mhand.ru'}
 		]
 	}),
+	computed:{
+		checkTheme(){
+			if (this.$waveui.theme === 'dark'){
+				this.tabTheme = 'nocturnal'
+			}else{
+				this.tabTheme = 'default'
+			}
+		}
+	},
+	mounted() {
+		console.log(this.$waveui.theme)
+		this.tabTheme = localStorage.tableTheme
+		setInterval(()=>{
+			if (this.$waveui.theme === 'dark'){
+				this.tabTheme = 'nocturnal'
+			}else{
+				this.tabTheme = 'default'
+			}
+		},1000)
+	},
 	methods:{
 		clickToLink(link){
 			window.open(link,"_blanc")
@@ -177,3 +281,8 @@ export default {
 	}
 }
 </script>
+<style>
+ .w-dialog{
+	 backdrop-filter: blur(10px);
+ }
+</style>
