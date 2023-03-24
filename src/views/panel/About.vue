@@ -211,6 +211,25 @@ export default {
 					{ id: 5, firstName: 'Virgil', task:'Lorem Ipsum - это текст-"рыба", часто используемый в печати и вэб-дизайне. Lorem Ipsum является стандартной "рыбой" для текстов на латинице с начала XVI века.',status:'На согласовании', dateIn: new Date().toLocaleString().substr(0,10), deadline:new Date(2023, 4,15).toLocaleString().substr(0,10), progress:90 }
 				]
 			},
+			{
+				title:'Ожидают действий', color:'orange', icon:'mdi mdi-progress-question',
+				headers: [
+					{ label: 'Номер задачи', field: 'id', width:'90px' },
+					{ label:'Задача', field:'task' },
+					{ label: 'От кого', field: 'firstName', width:'200px' },
+					{ label:'Дата постановки задачи', field: 'dateIn', width:'130px' },
+					{ label:'Дэдлайн задачи', field:'deadline',width:'100px' },
+					{ label:'Статус', field:'status',width:'100px'  },
+					{ label: 'Прогресс задачи', field: 'progress',width:'100px' },
+				],
+				data:[
+					{ id: 1, firstName: 'Floretta', task:'Lorem Ipsum - это текст-"рыба", часто используемый в печати и вэб-дизайне. Lorem Ipsum является стандартной "рыбой" для текстов на латинице с начала XVI века.',checkboxes:[{label:'sdadasda',value:1},{label:'alhdkbda',value:2}], selected:[1], status:'На обсуждении', discription:'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.', dateIn: new Date().toLocaleString().substr(0,10), deadline:new Date(2023, 4,15).toLocaleString().substr(0,10), progress:50 },
+					{ id: 2, firstName: 'Nellie' , task:'Lorem Ipsum - это текст-"рыба", часто используемый в печати и вэб-дизайне. Lorem Ipsum является стандартной "рыбой" для текстов на латинице с начала XVI века.', status:'Выполняется',dateIn: new Date().toLocaleString().substr(0,10), deadline:new Date(2023, 4,15).toLocaleString().substr(0,10), progress:20},
+					{ id: 3, firstName: 'Rory', task:'Lorem Ipsum - это текст-"рыба", часто используемый в печати и вэб-дизайне. Lorem Ipsum является стандартной "рыбой" для текстов на латинице с начала XVI века.', status:'Приостановлена', dateIn: new Date().toLocaleString().substr(0,10), deadline:new Date(2023, 4,15).toLocaleString().substr(0,10), progress:26 },
+					{ id: 4, firstName: 'Daley', task:'Lorem Ipsum - это текст-"рыба", часто используемый в печати и вэб-дизайне. Lorem Ipsum является стандартной "рыбой" для текстов на латинице с начала XVI века.', status:'Выполнена, ожидает подтверждения', dateIn: new Date().toLocaleString().substr(0,10), deadline:new Date(2023, 4,15).toLocaleString().substr(0,10),progress:74 },
+					{ id: 5, firstName: 'Virgil', task:'Lorem Ipsum - это текст-"рыба", часто используемый в печати и вэб-дизайне. Lorem Ipsum является стандартной "рыбой" для текстов на латинице с начала XVI века.',status:'На согласовании', dateIn: new Date().toLocaleString().substr(0,10), deadline:new Date(2023, 4,15).toLocaleString().substr(0,10), progress:90 }
+				]
+			},
 			{title:'Выполненные',color:'green', icon:"mdi mdi-progress-check", headers:[
 					{ label: 'ID', field: 'id' },
 					{ label: 'First name', field: 'firstName' },

@@ -58,6 +58,7 @@
 			</div>
 			<div class="mt2" style="display: flex; justify-content: start">
 				<w-checkbox class="body" v-model="delig" label="Можно делигировать"></w-checkbox>
+				<w-checkbox class="body ml2" v-model="access" label="Обязательое подтверждение от контролирующего/ответственного"></w-checkbox>
 			</div>
 		</template>
 		<template #actions>
@@ -84,6 +85,7 @@ export default {
 		control:false,
 		showMenu:false,
 		delig:false,
+		access: false,
 		addTaskDialog:false,
 		date:new Date(),
 		controllers:[
