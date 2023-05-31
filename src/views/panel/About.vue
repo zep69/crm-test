@@ -22,8 +22,9 @@
 						<span>Задачи</span>
 						<div class="spacer"></div>
 						<!-- <w-button color="primary">Поставить задачу</w-button> -->
-						<Dialogs type="task"/>
+						<Dialogs :departs="departs2" :user-id="userLoad._id"/>
 					</template>
+
 					<w-tabs :items="tabs" card transition="slide-fade-down">
 						<template #item-title="{item}">
 							<w-icon :class="item.color" >{{ item.icon }}</w-icon>
@@ -36,6 +37,8 @@
 										v-on:row-dblclick="onRowClick"
 										:search-options="{enabled: true, trigger: 'enter' }"
 										:theme="tabTheme"
+										:row-style-class="rowStyleClassFn"
+
 								>
 									<template #table-row="props">
 										<div v-if="props.column.field=='progress'">
@@ -48,9 +51,13 @@
 
 							<w-dialog
 									v-model="dialogTask"
+									persistent
 									width="1000px"
 							>
 								<template #title>
+									<div>
+
+									</div>
 									<w-icon md> {{item.icon}}</w-icon>
 									{{item.title}}
 									<div class="spacer">
@@ -61,13 +68,13 @@
 								</template>
 								<template #default>
 									<div style="display: flex; justify-content: start">
-										<h3>Задача от: </h3><span>{{selectRow.firstName}}</span>
+										<h3>Задача от: </h3><span>{{selectRow.author.name}}</span>
 									</div>
 									<div style="display: flex; justify-content: start">
-										<h3>Задача: </h3><span>{{selectRow.task}}</span>
+										<h3>Задача: </h3><span>{{selectRow.nameTask}}</span>
 									</div>
 									<div style="display: flex; justify-content: start">
-										<w-textarea label="Описание задачи" label-position="left" class="mt2" readonly outline :model-value="selectRow.discription"></w-textarea>
+										<w-textarea label="Описание задачи" label-position="left" class="mt2" readonly outline :model-value="selectRow.discriptionTask"></w-textarea>
 									</div>
 									<w-divider class="ma3" color="green"/>
 									<div style="display: flex; justify-content: center">
@@ -77,16 +84,34 @@
 										<div class="xs3 pa2">
 											<w-card title="Список">
 												<template #default>
-													<w-checkboxes :items="selectRow.checkboxes" v-model="selectRow.selected"></w-checkboxes>
+													<w-checkboxes :items="selectRow.list" v-model="selectRow.selected"></w-checkboxes>
 													<w-divider color="blue" class="ma2"/>
-													<w-button text color="blue"><w-icon>mdi mdi-plus</w-icon> Добавить пункт </w-button>
+													<w-button text color="blue" @click="addToListDialog = true"><w-icon>mdi mdi-plus</w-icon> Добавить пункт </w-button>
+													<w-dialog v-model="addToListDialog" width="250px">
+														<template #title>
+															<w-flex justify-space-between>
+																Добавить пункт
+																<w-icon @click="addToListDialog=false">mdi mdi-close</w-icon>
+															</w-flex>
+
+
+														</template>
+														<template #default>
+															<w-input v-model="newListComponent" outline></w-input>
+														</template>
+														<template #actions>
+															<w-flex justify-end>
+																<w-button @click="pushToList">Добавить</w-button>
+															</w-flex>
+														</template>
+													</w-dialog>
 												</template>
 											</w-card>
 										</div>
 										<div class="xs9 pa2">
 											<w-card title="Заметки выполнения">
 												<template #default>
-													<w-textarea outline></w-textarea>
+													<w-textarea v-model="selectRow.notes" outline></w-textarea>
 												</template>
 											</w-card>
 
@@ -94,21 +119,81 @@
 										<div class="xs3 pa2">
 											<w-card title="Сменить статус">
 
-												<w-select :items="statuses"></w-select>
+												<w-select v-model="selectStatus" :items="statuses" item-label-key="label" item-value-key="label" ></w-select>
 
 											</w-card>
 										</div>
 
 									</div>
+									<w-flex justify-center align-center>
+										<w-card>
+											<template #title>
+												На сколько готова задача
+											</template>
+											<template #default>
+												<w-slider v-model="selectRow.progress" step="1" thumb-label></w-slider>
+											</template>
+										</w-card>
+									</w-flex>
 								</template>
 								<template #actions>
 									<div class="spacer"></div>
-									<w-button color="black" bg-color="green">Подтвердить изменения </w-button>
+									<w-button color="black" v-if="selectRow.status == 'active'" bg-color="green" @click="updateTask(selectRow);dialogTask=false">Подтвердить изменения </w-button>
 								</template>
 							</w-dialog>
 						</template>
 					</w-tabs>
 				</w-card>
+
+				<w-card class="mt2 primary" v-if="kaki === 'task'">
+					<template #title> Поставленные задачи</template>
+					<template #default>
+						<w-tabs :items="tabsActive" card transition="slide-fade-down">
+							<template #item-title="{item}">
+								<w-icon :class="item.color" >{{ item.icon }}</w-icon>
+								<span :class="item.color">{{item.title}}</span>
+							</template>
+
+							 <template #item-content="{item}">
+								<vue-good-table
+										:columns="item.headers"
+										 :rows="item.data"
+										v-on:row-dblclick="onRowClickCheck"
+										:search-options="{enabled: true, trigger: 'enter' }"
+										:theme="tabTheme"
+										:row-style-class="rowStyleClassFn"
+
+
+								>
+									<template #table-row="props">
+										<div v-if="props.column.field=='progress'">
+											<w-progress size="4em" circle :stroke="8" v-model="props.row.progress">
+												<strong>{{ props.row.progress }}%</strong>
+											</w-progress>
+										</div>
+									</template>
+								</vue-good-table>
+							</template>
+
+
+
+						</w-tabs>
+					</template>
+
+				</w-card>
+
+				<w-dialog v-model="dialogTaskControl" width="800">
+					<template #title>
+						<h2>Информация о задачи</h2>
+						<div  class="spacer"></div>
+						<w-button lg bg-color="red" color="white" @click="dialogTaskControl=false"><w-icon>mdi mdi-close</w-icon></w-button>
+					</template>
+					<template #default>
+						<DialogTask :task="selectRow"/>
+					</template>
+				</w-dialog>
+
+
 
 				<w-card title="Сотрудники Компании" v-if="kaki==='da'">
 					<div v-for="item in kakashonki">
@@ -143,11 +228,30 @@
 
 					</div>
 				</w-card>
+				<w-card title="Заявки" v-if="kaki==='appl'">
+					<template #default>
+						<div>
+							<h3>Template for application</h3>
+							<br>
+							<ApplicationPage type="departs"/>
+							<br>
+							<CardSimple width="20">
+								<template #header>
+									<h3>Simple header</h3>
+								</template>
+								<template #default>
+									<h3>Deafult</h3>
+								</template>
+							</CardSimple>
+						</div>
+					</template>
+				</w-card>
 
 				<w-card title="Планировщик" disabled v-if="kaki==='calendar'">
 					<vue-cal style="height: 500px"></vue-cal>
 				</w-card>
 			</div>
+
 
 
 	</w-flex>
@@ -157,25 +261,43 @@
 import VueCal from 'vue-cal'
 import 'vue-cal/dist/vuecal.css'
 import Dialogs from "../../components/Dialogs";
+import DialogTask from "../../components/DialogTask";
+import {mapGetters, mapActions} from "vuex";
+import ApplicationPage from "../../components/ApplicationPage";
+import CardSimple from "../../components/CardSimple";
+
 export default {
 	components:{
 		Dialogs,
-		VueCal
+		VueCal,
+		DialogTask,
+		ApplicationPage,
+		CardSimple
 	},
 	data:()=>({
 		dialogTask:false,
 		tabTheme:'default',
+		selectStatus:'',
+		userLoad :{
+			_id:null,
+			mail:null
+		},
 		selectRow:{
 			id:null,
 			firstName:null,
 			lastName:null,
 		},
+		addToListDialog:false,
+		newListComponent:null,
 		statuses:[
-			{label:'На обсуждении'},
-			{label:'Выполняется'},
-			{label:'Приостановлена'},
-			{label:'Выполнена, ожидает подтверждения'},
-			{label:'На согласовании'},
+			{label:'Поставлена', value:'active'},
+			{label:'Взята в работу', value:'active'},
+			{label:'На обсуждении/Согласовании', value:'active'},
+			{label:'Выполнена, ожидает подтверждения', value: 'waiting'},
+			{label:'Приостановлена', value:'waiting'},
+			{label:'Отменена', value:'gone'},
+			{label:'Просрочена', value:'gone'},
+			{label:'Готова/Выполнена', value:'done'},
 		],
 		selectIndex:null,
 		headers:[
@@ -191,15 +313,71 @@ export default {
 			{ id: 4, firstName: 'Daley', lastName: 'Elliott', dateIn: new Date().toLocaleString().substr(0,10), deadline:new Date(2023, 4,15).toLocaleTimeString().substr(0,10) },
 			{ id: 5, firstName: 'Virgil', lastName: 'Carman', dateIn: new Date().toLocaleString().substr(0,10), deadline:new Date(2023, 4,15).toLocaleTimeString().substr(0,10) }
 		],
+
+		tabsActive:[
+			{title:'Активные задачи', color:'blue', icon:'mdi mdi-progress-clock',
+				headers:[
+					{label:'Задача',field:'nameTask'},
+					{label:'Ответственный',field:'userName'},
+					{ label:'Дата постановки задачи', field: 'startDate', width:'130px'},
+					{ label:'Дэдлайн задачи', field:'deadline',width:'100px' },
+					{label:'Статус', field:'nameStatus',width:'100px'  },
+					{ label: 'Прогресс задачи', field: 'progress',width:'100px' },
+				],
+				data:[]
+			},
+			{title:'Готовые', color:'green', icon:'mdi mdi-progress-check',
+				headers:[
+					{label:'Задача',field:'nameTask'},
+					{label:'Ответственный',field:'userName'},
+					{ label:'Дата постановки задачи', field: 'startDate', width:'130px' },
+					{ label:'Дэдлайн задачи', field:'deadline',width:'100px' },
+					{label:'Статус', field:'nameStatus',width:'100px'  },
+					{ label: 'Прогресс задачи', field: 'progress',width:'100px' },
+				],
+				data:[]
+			},
+			{title:'Отмененные', color:'red', icon:'mdi mdi-progress-close',
+				headers:[
+					{label:'Задача',field:'nameTask'},
+					{label:'Ответственный',field:'userName'},
+					{ label:'Дата постановки задачи', field: 'startDate', width:'130px' },
+					{ label:'Дэдлайн задачи', field:'deadline',width:'100px' },
+					{label:'Статус', field:'nameStatus',width:'100px'  },
+					{ label: 'Прогресс задачи', field: 'progress',width:'100px' },
+				],
+				data:[]
+			},
+		],
+
 		tabs:[
 			{title:'Текущие задачи',color:'blue', icon:"mdi mdi-progress-clock",
 				headers:[
-					{ label: 'Номер задачи', field: 'id', width:'90px' },
-					{ label:'Задача', field:'task' },
-					{ label: 'От кого', field: 'firstName', width:'200px' },
-					{ label:'Дата постановки задачи', field: 'dateIn', width:'130px' },
+					//{ label: 'Номер задачи', field: 'id', width:'90px' },
+					{ label:'Задача', field:'nameTask' },
+					{ label: 'От кого', field: 'author.name', width:'200px' },
+					{ label:'Дата постановки задачи', field: 'startDate', width:'130px' },
 					{ label:'Дэдлайн задачи', field:'deadline',width:'100px' },
-					{label:'Статус', field:'status',width:'100px'  },
+					{label:'Статус', field:'nameStatus',width:'100px'  },
+					{ label: 'Прогресс задачи', field: 'progress',width:'100px' },
+
+				],
+				data:[
+					{ id: 1, firstName: 'Алексей Шляхтин', task:'Таск менеджер, свой аналог Битрикса',checkboxes:[{label:'Обсудить',value:1},{label:'Начать',value:2}], selected:[1], status:'На обсуждении', discription:'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.', dateIn: new Date().toLocaleString().substr(0,10), deadline:new Date(2023, 4,15).toLocaleString().substr(0,10), progress:50 },
+					{ id: 2, firstName: 'Олег Петкунас' , task:'Нужна возможность планировать свой день', status:'Выполняется',dateIn: new Date().toLocaleString().substr(0,10), deadline:new Date(2023, 4,15).toLocaleString().substr(0,10), progress:20},
+					{ id: 3, firstName: 'Марат Вагапов', task:'Помощь с настройкой nodejs telegram api', status:'Приостановлена', dateIn: new Date().toLocaleString().substr(0,10), deadline:new Date(2023, 4,15).toLocaleString().substr(0,10), progress:26 },
+					{ id: 4, firstName: 'Дюльдин Александр', task:'Отчет о проделанной работе за Февраль 2023', status:'Выполнена, ожидает подтверждения', dateIn: new Date().toLocaleString().substr(0,10), deadline:new Date(2023, 4,15).toLocaleString().substr(0,10),progress:99 },
+					{ id: 5, firstName: 'Virgil', task:'Lorem Ipsum - это текст-"рыба", часто используемый в печати и вэб-дизайне. Lorem Ipsum является стандартной "рыбой" для текстов на латинице с начала XVI века.',status:'На согласовании', dateIn: new Date().toLocaleString().substr(0,10), deadline:new Date(2023, 4,15).toLocaleString().substr(0,10), progress:90 }
+				]
+			},
+			{
+				title:'Ожидают действий', color:'orange', icon:'mdi mdi-progress-question',
+				headers: [
+					{ label:'Задача', field:'nameTask' },
+					{ label: 'От кого', field: 'author.name', width:'200px' },
+					{ label:'Дата постановки задачи', field: 'startDate', width:'130px' },
+					{ label:'Дэдлайн задачи', field:'deadline',width:'100px' },
+					{label:'Статус', field:'nameStatus',width:'100px'  },
 					{ label: 'Прогресс задачи', field: 'progress',width:'100px' },
 
 				],
@@ -211,29 +389,14 @@ export default {
 					{ id: 5, firstName: 'Virgil', task:'Lorem Ipsum - это текст-"рыба", часто используемый в печати и вэб-дизайне. Lorem Ipsum является стандартной "рыбой" для текстов на латинице с начала XVI века.',status:'На согласовании', dateIn: new Date().toLocaleString().substr(0,10), deadline:new Date(2023, 4,15).toLocaleString().substr(0,10), progress:90 }
 				]
 			},
-			{
-				title:'Ожидают действий', color:'orange', icon:'mdi mdi-progress-question',
-				headers: [
-					{ label: 'Номер задачи', field: 'id', width:'90px' },
-					{ label:'Задача', field:'task' },
-					{ label: 'От кого', field: 'firstName', width:'200px' },
-					{ label:'Дата постановки задачи', field: 'dateIn', width:'130px' },
-					{ label:'Дэдлайн задачи', field:'deadline',width:'100px' },
-					{ label:'Статус', field:'status',width:'100px'  },
-					{ label: 'Прогресс задачи', field: 'progress',width:'100px' },
-				],
-				data:[
-					{ id: 1, firstName: 'Floretta', task:'Lorem Ipsum - это текст-"рыба", часто используемый в печати и вэб-дизайне. Lorem Ipsum является стандартной "рыбой" для текстов на латинице с начала XVI века.',checkboxes:[{label:'sdadasda',value:1},{label:'alhdkbda',value:2}], selected:[1], status:'На обсуждении', discription:'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.', dateIn: new Date().toLocaleString().substr(0,10), deadline:new Date(2023, 4,15).toLocaleString().substr(0,10), progress:50 },
-					{ id: 2, firstName: 'Nellie' , task:'Lorem Ipsum - это текст-"рыба", часто используемый в печати и вэб-дизайне. Lorem Ipsum является стандартной "рыбой" для текстов на латинице с начала XVI века.', status:'Выполняется',dateIn: new Date().toLocaleString().substr(0,10), deadline:new Date(2023, 4,15).toLocaleString().substr(0,10), progress:20},
-					{ id: 3, firstName: 'Rory', task:'Lorem Ipsum - это текст-"рыба", часто используемый в печати и вэб-дизайне. Lorem Ipsum является стандартной "рыбой" для текстов на латинице с начала XVI века.', status:'Приостановлена', dateIn: new Date().toLocaleString().substr(0,10), deadline:new Date(2023, 4,15).toLocaleString().substr(0,10), progress:26 },
-					{ id: 4, firstName: 'Daley', task:'Lorem Ipsum - это текст-"рыба", часто используемый в печати и вэб-дизайне. Lorem Ipsum является стандартной "рыбой" для текстов на латинице с начала XVI века.', status:'Выполнена, ожидает подтверждения', dateIn: new Date().toLocaleString().substr(0,10), deadline:new Date(2023, 4,15).toLocaleString().substr(0,10),progress:74 },
-					{ id: 5, firstName: 'Virgil', task:'Lorem Ipsum - это текст-"рыба", часто используемый в печати и вэб-дизайне. Lorem Ipsum является стандартной "рыбой" для текстов на латинице с начала XVI века.',status:'На согласовании', dateIn: new Date().toLocaleString().substr(0,10), deadline:new Date(2023, 4,15).toLocaleString().substr(0,10), progress:90 }
-				]
-			},
 			{title:'Выполненные',color:'green', icon:"mdi mdi-progress-check", headers:[
-					{ label: 'ID', field: 'id' },
-					{ label: 'First name', field: 'firstName' },
-					{ label: 'Last name', field: 'lastName' }
+					{ label:'Задача', field:'nameTask' },
+					{ label: 'От кого', field: 'author.name', width:'200px' },
+					{ label:'Дата постановки задачи', field: 'startDate', width:'130px' },
+					{ label:'Дэдлайн задачи', field:'deadline',width:'100px' },
+					{label:'Статус', field:'nameStatus',width:'100px'  },
+					{ label: 'Прогресс задачи', field: 'progress',width:'100px' },
+
 				],
 				data:[
 					{ id: 1, firstName: 'F23loretta', lastName: 'Sampson' },
@@ -243,9 +406,13 @@ export default {
 					{ id: 5, firstName: 'Vir22gil121', lastName: 'Carman' }
 				]},
 			{title:'Отклоненные/Просроченные',color:'red', icon:'mdi mdi-progress-close', headers:[
-					{ label: 'ID', field: 'id' },
-					{ label: 'First name', field: 'firstName' },
-					{ label: 'Last name', field: 'lastName' }
+					{ label:'Задача', field:'nameTask' },
+					{ label: 'От кого', field: 'author.name', width:'200px' },
+					{ label:'Дата постановки задачи', field: 'startDate', width:'130px' },
+					{ label:'Дэдлайн задачи', field:'deadline',width:'100px' },
+					{label:'Статус', field:'nameStatus',width:'100px'  },
+					{ label: 'Прогресс задачи', field: 'progress',width:'100px' },
+
 				],
 				data:[
 					{ id: 1, firstName: 'F23lo@retta', lastName: 'S@@ampson' },
@@ -258,25 +425,31 @@ export default {
 		kaki:'task',
 		items:[
 			{label:'Задачи', icon:'mdi mdi-check', kaki:'task', color:'primary'},
-			{label:'Заявки', icon:'mdi mdi-format-list-bulleted', kaki:'appl', color:'red'},
+			{label:'Заявки', icon:'mdi mdi-format-list-bulleted', kaki:'appl', color:'primary'},
 			{label:'Компания',icon:'mdi mdi-office-building-outline', kaki:'da', color:'orange'},
 			{label: 'Планировщик', icon:'mdi mdi-calendar-clock', kaki: 'calendar', color:'red'}
 		],
 		kakashonki:[
-			{name:'Олег Петкунас', img:'https://s3.timeweb.com/cd58536-mhand-bucket/avatar/tRmrR28uzmY.jpg', discription:'Lorem Ipsum - это текст-"рыба", часто используемый в печати и вэб-дизайне. Lorem Ipsum является стандартной "рыбой" для текстов на латинице с начала XVI века. ', telega:'https://t.me/mhand_ak', number:'+79966237451', mail:'ak@mhand.ru'},
+			{name:'Олег Петкунас', img:'https://s3.timeweb.com/cd58536-mhand-bucket/avatar/photo_2023-03-19_17-26-40.jpg', discription:'Lorem Ipsum - это текст-"рыба", часто используемый в печати и вэб-дизайне. Lorem Ipsum является стандартной "рыбой" для текстов на латинице с начала XVI века. ', telega:'https://t.me/mhand_ak', number:'+79966237451', mail:'ak@mhand.ru'},
 			{name:'Георгий Хачатрян', img:'https://s3.timeweb.com/cd58536-mhand-bucket/avatar/photo_2023-01-10_12-03-02.jpg', discription:'Lorem Ipsum - это текст-"рыба", часто используемый в печати и вэб-дизайне. Lorem Ipsum является стандартной "рыбой" для текстов на латинице с начала XVI века.', telega:'https://t.me/megahendsupport', number:'+79991726381', mail:'stp1@mhand.ru'}
-		]
+		],
+		departs2:Proxy,
+		dialogTaskControl:false,
 	}),
 	computed:{
+		...mapGetters(["departs", "user", "userCrm"]),
 		checkTheme(){
 			if (this.$waveui.theme === 'dark'){
 				this.tabTheme = 'nocturnal'
 			}else{
 				this.tabTheme = 'default'
 			}
-		}
+		},
+
+
 	},
-	mounted() {
+	async mounted(){
+
 		console.log(this.$waveui.theme)
 		this.tabTheme = localStorage.tableTheme
 		setInterval(()=>{
@@ -286,22 +459,240 @@ export default {
 				this.tabTheme = 'default'
 			}
 		},1000)
+		console.log(localStorage.mail)
+		this.userLoad = await this.getUser(localStorage.mail)
+		console.log(this.user._id)
+		console.log(this.user)
+		//await this.getActiveTask()
+		await this.loadTask()
+
+		this.departs2 =  await this.getDeparts()
+		await this.getUserCrm(this.user._id)
+		console.log('Ebalo' , this.userCrm)
+		await this.getControlTask()
+		this.changeTime()
+
 	},
 	methods:{
+		...mapActions(['getUser', "getDeparts", "getUserCrm"]),
+		async getActiveTask(){
+			let id = this.user._id
+			let resp = await fetch(process.env.VUE_APP_BACK_HTTP+"crm/getTaskActive/"+id)
+			if(resp.status == 200){
+				let data = await resp.json()
+				this.tabs[0].data = data
+				console.log(data)
+			}else{
+				this.tabs[0].data = []
+				console.log('Не нашел задачи')
+			}
+		},
+		async getWaitingTask(){
+			let id = this.user._id
+			let resp = await fetch(process.env.VUE_APP_BACK_HTTP+"crm/getTaskWaiting/"+id)
+			if(resp.status == 200){
+				let data = await resp.json()
+				this.tabs[1].data = data
+				console.log(data)
+			}else{
+				this.tabs[1].data = []
+				console.log('Не нашел задачи')
+			}
+		},
+		async getDoneTask(){
+			let id = this.user._id
+			let resp = await fetch(process.env.VUE_APP_BACK_HTTP+"crm/getTaskDone/"+id)
+			if(resp.status == 200){
+				let data = await resp.json()
+				this.tabs[2].data = data
+				console.log(data)
+			}else{
+				this.tabs[2].data = []
+				console.log('Не нашел задачи')
+			}
+		},
+		async getGoneTask(){
+			let id = this.user._id
+			let resp = await fetch(process.env.VUE_APP_BACK_HTTP+"crm/getTaskGone/"+id)
+			if(resp.status == 200){
+				let data = await resp.json()
+				this.tabs[3].data = data
+				console.log(data)
+			}else{
+				this.tabs[3].data = []
+				console.log('Не нашел задачи')
+			}
+		},
+		async loadTask(){
+			await this.getActiveTask()
+			await this.getWaitingTask()
+			await this.getDoneTask()
+			await this.getGoneTask()
+		},
+
 		clickToLink(link){
 			window.open(link,"_blanc")
 		},
+		changeTime(){
+			for(let i =0; i<this.tabs[0].data.length; i++){
+				this.tabs[0].data[i].startDate = new Date(this.tabs[0].data[i].startDate).toLocaleString().substr(0,10)
+				this.tabs[0].data[i].deadline = new Date(this.tabs[0].data[i].deadline).toLocaleString().substr(0,10)
+				for(let j=0; j<this.statuses.length; j++){
+					if(this.tabs[0].data[i].status == this.statuses[j].value){
+						//this.tabs[0].data[i].status = this.statuses[j].label
+					}
+				}
+			}
+			for (let i=0; i<this.tabsActive.length; i++){
+				for(let j=0; i<this.tabsActive[i].data.length; j++){
+					this.tabsActive[i].data[j].startDate = new Date(this.tabsActive[i].data[j].startDate).toLocaleString().substr(0,10)
+					this.tabsActive[i].data[j].deadline = new Date(this.tabsActive[i].data[j].deadline).toLocaleString().substr(0,10)
+				}
+			}
+
+		},
 		onRowClick(params){
 			this.selectIndex = params.row
+
 			this.selectRow = Object.assign({}, this.selectIndex)
 			this.dialogTask=true
+			this.selectIndex = params.pageIndex
 			console.log(this.selectRow)
+			console.log(this.selectIndex)
 		},
+		onRowClickCheck(params){
+			this.selectIndex = params.row
+			this.selectRow = Object.assign({}, this.selectIndex)
+			this.dialogTaskControl = true
+			this.selectIndex = params.pageIndex
+		},
+		pushToList(){
+			let index = this.selectRow.list.length +1
+			this.selectRow.list.push({label:this.newListComponent, value:index})
+			this.addToListDialog = false
+			this.newListComponent = null
+		},
+		async getControlTask(){
+			let id = this.user._id
+			let name = this.userCrm.firstname + ' ' + this.userCrm.lastname
+			let response = await fetch(process.env.VUE_APP_BACK_HTTP+'crm/getControllerTask/'+id+'/'+this.userCrm.firstname+'/'+this.userCrm.lastname)
+
+			let data = await response.json()
+			if (data !=[]){
+				for(let i=0; i < data.length; i++){
+					if (data[i].status == 'active'){
+						this.tabsActive[0].data.push(data[i])
+					}
+					if(data[i].status == 'done'){
+						this.tabsActive[1].data.push(data[i])
+					}
+					if(data[i].status == 'gone'){
+						this.tabsActive[2].data.push(data[i])
+					}
+				}
+			}
+		},
+		consoleLoggSelectedRow(){
+			console.log(this.selectRow)
+			console.log(this.selectIndex)
+			this.tabs[0].data[this.selectIndex]= this.selectRow
+			console.log(this.selectStatus)
+			let idStatus = ''
+			for (let i =0; i<this.statuses.length; i++){
+				if(this.statuses[i].label==this.selectStatus){
+					idStatus = this.statuses[i].value
+				}else continue
+			}
+			this.tabs[0].data[this.selectIndex].status = idStatus
+			this.tabs[0].data[this.selectIndex].nameStatus = this.selectStatus
+		},
+		rowStyleClassFn(row){
+			let date = new Date()
+			let dateArr = row.deadline.split('.')
+			let dateDeadline = new Date(dateArr[2], dateArr[1]-1, dateArr[0])
+			if(row.status === 'active'){
+				if (dateDeadline> date){
+					if(this.tabTheme == 'default'){
+						return 'backTableGreen'
+					}else{
+						return 'backTableGreenDark'
+					}
+
+				}else{
+					if(this.tabTheme != 'default'){
+						return 'backTableRedDark'
+					}else{
+						return 'backTableRed'
+					}
+				}
+			}
+
+			//return row.progress > 50 ? 'red' : 'green'
+		},
+		async updateTask(task){
+			let idStatus = ''
+			for (let i =0; i<this.statuses.length; i++){
+				if(this.statuses[i].label==this.selectStatus){
+					idStatus = this.statuses[i].value
+				}else continue
+			}
+			let resp = await fetch(process.env.VUE_APP_BACK_HTTP+"crm/updateTask/"+task._id, {
+				method:"PATCH",
+				headers:{
+					Accept: "application/json",
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					status:idStatus,
+					notes:task.notes,
+					progress:task.progress,
+					nameStatus:this.selectStatus,
+					list:task.list,
+					selected:task.selected,
+				})
+			})
+			if (resp.status == 200){
+				alert('Задача обновлена')
+				this.tabs[0].data = []
+				this.tabs[1].data = []
+				this.tabs[2].data = []
+				this.tabs[3].data = []
+				await this.loadTask()
+				this.changeTime()
+				location.reload()
+				this.selectStatus = ''
+				this.dialogTask = false
+			}else{
+				alert('Error')
+			}
+		}
 	}
 }
 </script>
 <style>
  .w-dialog{
 	 backdrop-filter: blur(10px);
+ }
+ .vue-good-table{
+ }
+ .backTableGreen{
+	 background-color: #d0fcd2;
+	 border:2px solid rgba(79, 75, 75, 0.93);
+
+ }
+
+ .backTableRed{
+	 background-color: #f6d8d4;
+	 border:2px solid rgba(79, 75, 75, 0.93);
+	 transition: all 2s;
+ }
+
+ .backTableGreenDark{
+	 background-color: #2b562b;
+	 border:2px solid rgba(166, 157, 157, 0.93);
+ }
+ .backTableRedDark{
+	 background-color: #692316;
+	 border:2px solid rgba(166, 157, 157, 0.93);
  }
 </style>

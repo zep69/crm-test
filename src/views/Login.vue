@@ -93,6 +93,9 @@
 </template>
 
 <script>
+import {mapActions} from "vuex";
+import {mapGetters} from "vuex";
+
 export default {
 	name: "Login",
 	data:()=>({
@@ -111,12 +114,17 @@ export default {
 		confirmDialog:false,
 		otp:null,
 	}),
+	computed:{
+		...mapGetters(["user"])
+	},
 	mounted(){
 		console.log(localStorage.token)
+
 	},
 	methods:{
+		...mapActions(["getUser"]),
 		async changeEmail(email){
-			let response = await fetch('http://192.168.1.83:3000/crm/chngePass/'+email,{
+			let response = await fetch(process.env.VUE_APP_BACK_HTTP+'crm/chngePass/'+email,{
 				method:"POST",
 				headers: {
 					'Content-Type': 'application/json;charset=utf-8'
@@ -145,7 +153,7 @@ export default {
 		async changePassword(){
 			this.checkColor()
 			if (this.isTrue){
-				let request = await fetch('http://192.168.1.83:3000/crm/newPass',{
+				let request = await fetch(process.env.VUE_APP_BACK_HTTP+'crm/newPass',{
 					method:'PATCH',
 					headers: {
 						'Content-Type': 'application/json;charset=utf-8'
@@ -201,6 +209,8 @@ export default {
 				let data = request.json()
 				localStorage.token=data.token
 				localStorage.mail = this.login
+				await this.getUser(this.login)
+				console.log(this.user)
 				console.log(data)
 				this.$router.push('/panel')
 			}

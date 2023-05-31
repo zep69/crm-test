@@ -39,6 +39,7 @@
 
 <script>
 
+import {mapActions, mapGetters} from "vuex";
 
 export default {
 	data:()=>({
@@ -58,11 +59,15 @@ export default {
 		selected:null,
 	}),
 	computed:{
-
+		...mapGetters(["user", "userCrm"])
 	},
-	mounted() {
+	async mounted() {
+		console.log('Id prof', localStorage.mail)
+		await this.getUser(localStorage.mail)
+		await this.getUserCrm(this.user._id)
 	},
 	methods:{
+		...mapActions(["getUser", "getUserCrm"]),
 		checkTheme(theme){
 			if(theme === true ){
 				this.$waveui.switchTheme('dark')
