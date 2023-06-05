@@ -159,7 +159,7 @@ export default {
 				date[1] = Number(date[1]) - 1
 
 				let count = 0
-				let taskResp = await fetch('http://192.168.2.80:3000/crm/createTask', {
+				let taskResp = await fetch(process.env.VUE_APP_BACK_HTTP+'crm/createTask', {
 					method:'POST',
 					headers:{
 						Accept: "application/json",
@@ -181,7 +181,7 @@ export default {
 					this.addTaskDialog = false
 				}
 
-				let sendMail = await fetch('http://192.168.2.80:3000/crm/test/mail', {
+				let sendMail = await fetch(process.env.VUE_APP_BACK_HTTP+'crm/test/mail', {
 					method:'POST',
 					headers:{
 						Accept: "application/json",
