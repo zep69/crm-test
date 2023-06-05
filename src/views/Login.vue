@@ -2,16 +2,27 @@
 
 	<w-flex column align-center justify-center>
 		<w-card title="Вход в систему" title-class="blue-light5--bg">
-			<w-input outline label="Логин" v-model="login"></w-input>
-			<w-input
-					class="mt2"
-					outline
-					v-model="password"
-					label="Пароль"
-					:type="isPassword ? 'password' : 'text'"
-					:inner-icon-right="isPassword ? 'mdi mdi-eye-off' : 'mdi mdi-eye'"
-					@click:inner-icon-right="isPassword = !isPassword">
-			</w-input>
+			<template #default>
+				<w-input outline label="Логин(e-mail)" :label-color="inputStyle" :color="inputStyle" v-model="login"></w-input>
+				<w-input
+						class="mt2"
+						:color="inputStyle"
+						outline
+						v-model="password"
+						label="Пароль"
+						:label-color="inputStyle"
+						:type="isPassword ? 'password' : 'text'"
+						:inner-icon-right="isPassword ? 'mdi mdi-eye-off' : 'mdi mdi-eye'"
+						@click:inner-icon-right="isPassword = !isPassword"
+						@keypress="logInKey"
+
+				>
+				</w-input>
+				<div class="mt2" v-if="error">
+					<span class="error size--xs">Неверный логин или пароль</span>
+				</div>
+			</template>
+
 			<template #actions>
 				<div class="spacer"></div>
 				<w-button text color="error" @click="forgetPassDialog=true">Восстановить пароль</w-button>
@@ -101,6 +112,8 @@ export default {
 	data:()=>({
 		dialogPassChange:false,
 		isPassword:true,
+		error:false,
+		inputStyle:'primary',
 		newPass:null,
 		newPassRetry:null,
 		isNewPas:true,
@@ -189,6 +202,12 @@ export default {
 
 			}
 		},
+		async logInKey(e){
+			let key = e.keyCode
+			if(key===13){
+				await this.loginIn()
+			}
+		},
 		async loginIn(){
 			let now = new Date()
 			localStorage.tknTime =  now
@@ -213,6 +232,11 @@ export default {
 				console.log(this.user)
 				console.log(data)
 				this.$router.push('/panel')
+			}else{
+				this.inputStyle = 'error'
+				this.error = true
+				alert('Неверные логин или пароль')
+
 			}
 		},
 
