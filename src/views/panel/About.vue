@@ -191,6 +191,22 @@
 					<template #default>
 						<DialogTask :task="selectRow"/>
 					</template>
+					<template #actions>
+						<w-flex class="row justify-end">
+							<w-button class="error--bg" @click="deleteDialog=true">Удалить задачу</w-button>
+						</w-flex>
+
+					</template>
+				</w-dialog>
+				<w-dialog v-model="deleteDialog" width="350">
+					<template #title>Оповещение</template>
+					<template #default>Вы действительно хотите удалить задачу {{selectRow.nameTask}}?</template>
+					<template #actions>
+						<w-flex class="row justify-center">
+							<w-button class="success--bg" @click="deleteTask(selectRow._id, selectRow)">Да</w-button>
+							<w-button class="ml2 error--bg" @click="deleteDialog=false">Нет</w-button>
+						</w-flex>
+					</template>
 				</w-dialog>
 
 
@@ -228,7 +244,7 @@
 
 					</div>
 				</w-card>
-				<w-card title="Заявки" v-if="kaki==='appl'">
+				<w-card title="Заявки" v-if="kaki==='appl' && userCrm.admin">
 					<template #default>
 						<div>
 							<h3>Template for application</h3>
@@ -278,6 +294,7 @@ export default {
 		dialogTask:false,
 		tabTheme:'default',
 		selectStatus:'',
+		deleteDialog:false,
 		userLoad :{
 			_id:null,
 			mail:null
@@ -437,7 +454,7 @@ export default {
 		dialogTaskControl:false,
 	}),
 	computed:{
-		...mapGetters(["departs", "user", "userCrm"]),
+		...mapGetters(["departs", "user", "userCrm", "users"]),
 		checkTheme(){
 			if (this.$waveui.theme === 'dark'){
 				this.tabTheme = 'nocturnal'
@@ -451,6 +468,7 @@ export default {
 	async mounted(){
 
 		console.log(this.$waveui.theme)
+		console.log("Users", this.users)
 		this.tabTheme = localStorage.tableTheme
 		setInterval(()=>{
 			if (this.$waveui.theme === 'dark'){
@@ -474,7 +492,7 @@ export default {
 
 	},
 	methods:{
-		...mapActions(['getUser', "getDeparts", "getUserCrm"]),
+		...mapActions(['getUser', "getDeparts", "getUserCrm", "getUsers"]),
 		async getActiveTask(){
 			let id = this.user._id
 			let resp = await fetch(process.env.VUE_APP_BACK_HTTP+"crm/getTaskActive/"+id)
@@ -537,11 +555,11 @@ export default {
 			for(let i =0; i<this.tabs[0].data.length; i++){
 				this.tabs[0].data[i].startDate = new Date(this.tabs[0].data[i].startDate).toLocaleString().substr(0,10)
 				this.tabs[0].data[i].deadline = new Date(this.tabs[0].data[i].deadline).toLocaleString().substr(0,10)
-				for(let j=0; j<this.statuses.length; j++){
+				/*for(let j=0; j<this.statuses.length; j++){
 					if(this.tabs[0].data[i].status == this.statuses[j].value){
 						//this.tabs[0].data[i].status = this.statuses[j].label
 					}
-				}
+				}*/
 			}
 			for (let i=0; i<this.tabsActive.length; i++){
 				for(let j=0; i<this.tabsActive[i].data.length; j++){
@@ -576,6 +594,9 @@ export default {
 			let id = this.user._id
 			let name = this.userCrm.firstname + ' ' + this.userCrm.lastname
 			let response = await fetch(process.env.VUE_APP_BACK_HTTP+'crm/getControllerTask/'+id+'/'+this.userCrm.firstname+'/'+this.userCrm.lastname)
+			this.tabsActive[0].data = []
+			this.tabsActive[1].data = []
+			this.tabsActive[2].data = []
 
 			let data = await response.json()
 			if (data !=[]){
@@ -664,6 +685,43 @@ export default {
 				this.dialogTask = false
 			}else{
 				alert('Error')
+			}
+		},
+		async deleteTask(id, row){
+			let response = await fetch(process.env.VUE_APP_BACK_HTTP+'crm/deleteTask',{
+				method:'DELETE',
+				headers:{
+					Accept: "application/json",
+					"Content-Type": "application/json",
+				},
+				body:JSON.stringify({
+					id:id
+				})
+			})
+			if (response.status == 200){
+				this.deleteDialog =false
+				this.dialogTaskControl =false
+				let userTask = null
+				for(let i = 0; i<this.users.length; i++){
+					if(row.user == this.users[i].idProfile){
+						userTask = this.users[i]
+						console.log('userTask', userTask)
+						if(userTask.tgChat){
+							let message = 'Ваша задача: "'+this.selectRow.nameTask+'" - была удалена автором'
+							let url = encodeURI('https://api.telegram.org/bot5058763471:AAE5IYPYmQJUOh4dr25_EZfngyUoQ1Ck1j0/sendmessage?chat_id='+userTask.tgChat+'&text='+message)
+							let resp = fetch(url)
+						}
+						break
+					}else continue
+				}
+
+				await this.getControlTask()
+				await this.loadTask()
+				this.changeTime()
+				alert('Задача удалена')
+
+			}else{
+				alert('Что-то пошло не так')
 			}
 		}
 	}
