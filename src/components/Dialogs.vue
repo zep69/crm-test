@@ -18,40 +18,15 @@
 					</div>
 				</template>
 			</w-table>
-			<w-input class="mt2" v-model="task" outline>Краткое описание задачи</w-input>
+			<w-input class="mt2" v-model="task" :color="taskColor" :label-color="taskColor" outline>Краткое описание задачи</w-input>
 			<w-textarea class="mt2" outline v-model="taskDiscription" label="Опишите задачу подробней"></w-textarea>
-			<w-menu class="mt2" v-model="showMenu">
-				<template #activator>
-					<div class="mt2" style="display: flex">
-						<w-input readonly outline label-position="left"  v-model="date">
+			<div class="mt2" style="display: flex">
+				<w-input type="date" outline label-position="left" :color="deadlineColor" :label-color="deadlineColor"  v-model="date">
 							Дата дэдлайна
-						</w-input>
-						<w-button @click="showMenu = true" class="mr3 ml2"><w-icon>mdi mdi-calendar-import-outline</w-icon></w-button>
-					</div>
+				</w-input>
 
-				</template>
+			</div>
 
-
-				<vue-cal
-						class="vuecal--date-picker"
-						xsmall
-						:selected-date="datePick"
-						hide-view-selector
-						:time="false"
-						:transitions="false"
-						active-view="month"
-
-						:disable-views="['week', 'day']"
-						@cell-click="datePick = $event"
-						style="width: 210px;height: 230px">
-
-				</vue-cal>
-				<w-divider></w-divider>
-				<div style="display: flex">
-					<div class="spacer"></div>
-					<w-button @click="saveDeadline(); showMenu=false">Save</w-button>
-				</div>
-			</w-menu>
 			<!--<div class="mt3" style="display: flex">
 				<w-checkbox class="body" v-model="control" label="Добавить контроллирующего"></w-checkbox>
 				<w-select class="ml2"  outline v-if="control" :items="controllers"></w-select>
@@ -102,9 +77,11 @@ export default {
 		control:false,
 		showMenu:false,
 		delig:false,
+		taskColor:'primary',
+		deadlineColor:'primary',
 		access: false,
 		addTaskDialog:false,
-		date:new Date(),
+		date:null,
 		user:null,
 		controllers:[
 			{label:'Никита Пикалов'},
@@ -112,7 +89,7 @@ export default {
 			{label:'Олег Петкунас'},
 			{label:'Марат Вагапов'},
 		],
-		datePick:new Date(),
+		datePick:null,
 		tableHeaders:[
 			{label:'Выбрать', key:'checkbox'},
 			{label:'ФИО', key:'name'},
@@ -164,9 +141,23 @@ export default {
 			}
 			console.log(userArr)
 			let count = 0
-			let date = this.date.split('.')
-			date[1] = Number(date[1]) - 1
+			console.log(this.date)
+
+
 			for(let i = 0; i<userArr.length; i++){
+
+				if(this.task == null || this.date == null){
+					if(this.task == null){
+						this.taskColor = 'red'
+					}else{
+						this.deadlineColor = 'red'
+					}
+					alert("Заполните поля")
+					break
+				}
+				let date = this.date.split('-')
+				date[1] = Number(date[1]) - 1
+
 				let count = 0
 				let taskResp = await fetch('http://192.168.2.80:3000/crm/createTask', {
 					method:'POST',
@@ -180,7 +171,7 @@ export default {
 						userId:this.userCrm.idProfile,
 						authorName:this.userCrm.firstname +' '+ this.userCrm.lastname,
 						userTask:userArr[i].id,
-						deadline:new Date(date[2],date[1],date[0]),
+						deadline:new Date(date[0],date[1],date[2]),
 						startDate:new Date(),
 						userName: userArr[i].name
 					})
@@ -189,6 +180,7 @@ export default {
 					count+=1
 					this.addTaskDialog = false
 				}
+
 				let sendMail = await fetch('http://192.168.2.80:3000/crm/test/mail', {
 					method:'POST',
 					headers:{
@@ -198,11 +190,11 @@ export default {
 					body:JSON.stringify({
 						name : this.userCrm.firstname +' '+ this.userCrm.lastname,
 						nameTask : this.task,
-						deadline : new Date(date[2],date[1],date[0]),
+						deadline : new Date(date[0],date[1],date[2]),
 						mail: userArr[i].email
 					})
 				})
-				let dateSend = new Date(date[2],date[1],date[0]).toLocaleString().substr(0,10)
+				let dateSend = new Date(date[0],date[1],date[2]).toLocaleString().substr(0,10)
 				let message = 'У Вас новая задача!\n' +
 						'От: '+this.userCrm.firstname +' '+ this.userCrm.lastname+'\n' +
 						'Задача:'+this.task+'\n' +
@@ -211,7 +203,7 @@ export default {
 				let sendTg = await fetch(url)
 			}
 
-			alert('Задача поставлена '+count+' пользователям')
+			alert('Задача поставлена ')
 		},
 	}
 }
