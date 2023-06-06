@@ -2,18 +2,46 @@
 	<div>
 		<w-flex justify-center class="pa5">
 			<w-card class="xs5 pa2 " style="border-radius: 1rem">
+
 				<br>
 				<w-flex  style="height: 100%" column align-center justify-center>
 
-					<w-image
-							class="bd1 sh1 bdrsr d-block"
+					<div class="box">
+						<img :src="profileData.linkAvatar">
+					</div>
+					<!-- <w-image
+							class="bd1 sh1 bdrsr d-block mt2"
 							:src="profileData.linkAvatar"
 							:width="300"
 							:height="300">
-					</w-image>
+					</w-image> -->
 
 
-					<h1 class="mt4 primary">{{profileData.firstname}} {{profileData.lastname}}</h1>
+
+					<div class="mt4 primary" style="display: flex; justify-content: center; align-content: center">
+						<h1 >{{profileData.firstname}} {{profileData.lastname}}</h1>
+
+						<w-tooltip right>
+							<template #activator="{on}">
+								<w-button v-on="on" class="ml1" icon="mdi mdi-pen" @click="editDialog=true" ></w-button>
+							</template>
+							Редактировать профиль
+						</w-tooltip>
+						<w-dialog transition="bounce" v-model="editDialog" width="400">
+							<template #title>
+
+									<span class="primary"> Редактирование профиля</span>
+									<div class="spacer"></div>
+									<w-button icon="mdi mdi-close" text class="error" lg @click="editDialog=false"></w-button>
+
+
+							</template>
+							<template #default>
+								<EditDialog :profile="profileData"  :send-prikols="consoleLogProf" />
+							</template>
+						</w-dialog>
+
+					</div>
 					<h1></h1>
 
 
@@ -151,18 +179,20 @@ const FIND_USER = process.env.VUE_APP_BACK_HTTP+'crm/findProfile/'
 const  REGISTER_USER = process.env.VUE_APP_BACK_HTTP+'crm/registerUserProfile'
 import {DoughnutChart} from 'vue-chart-3'
 import { Chart, registerables } from "chart.js";
+import EditDialog from "../../components/EditDialog";
 
 Chart.register(...registerables);
 
 export default {
 	name: "Profile",
-	components:{DoughnutChart},
+	components:{DoughnutChart, EditDialog},
 	data:() =>({
 		load:true,
 		over:true,
 		dialogTg:false,
 		selectItems:[],
 		changeDepart:false,
+		editDialog:false,
 		file:null,
 		dataTest: {
 			labels:['Выполненные', 'Отложенные','Просроченные','Отмененные','На рассмотрении'],
@@ -309,6 +339,10 @@ export default {
 				this.load = false
 				this.newProfile = false
 			}
+		},
+		consoleLogProf(data){
+			console.log('data', data)
+			this.editDialog = data.profile
 		}
 	},
 	async mounted() {
@@ -348,5 +382,29 @@ avatar:hover{
 }
 .w-tooltip{
 	border-radius: 2rem;
+}
+.w-dialog{
+	backdrop-filter: blur(10px);
+	box-shadow: 0px 10px 10px 0px rgba(0, 0, 0, 0.5);
+}
+.box {
+	position: relative;
+	overflow:hidden;
+	width:20rem;
+	height:20rem;
+	border:solid 2px;
+	border-radius:10rem;
+}
+.box img {
+	position: absolute;
+	top:50%;
+	left:50%;
+	-webkit-transform:translate(-50%,-50%);
+	-ms-transform:translate(-50%,-50%);
+	transform:translate(-50%,-50%);
+	width:20rem;
+	height:20rem;
+	-o-object-fit:cover;
+	object-fit:cover;
 }
 </style>
