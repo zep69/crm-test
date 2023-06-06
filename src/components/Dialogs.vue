@@ -198,6 +198,7 @@ export default {
 				let message = 'У Вас новая задача!\n' +
 						'От: '+this.userCrm.firstname +' '+ this.userCrm.lastname+'\n' +
 						'Задача:'+this.task+'\n' +
+						'Описание: ' + this.taskDiscription+'\n'+
 						'Выполнить до: '+dateSend
 				let url = encodeURI('https://api.telegram.org/bot5058763471:AAE5IYPYmQJUOh4dr25_EZfngyUoQ1Ck1j0/sendmessage?chat_id='+userArr[i].tgChat+'&text='+message)
 				let sendTg = await fetch(url)
