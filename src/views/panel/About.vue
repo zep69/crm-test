@@ -4,9 +4,31 @@
 
 	<w-flex wrap>
 		<!--  -->
-		<div class="xs2 pal pa2" >
-			<w-card color="primary" title="Вкладки" style="border-radius: 1rem">
-				<w-list :items="items">
+		<div class="navPhone xs2 pal pa2">
+			<div  class="drawer">
+				<w-flex column justify-center>
+					<w-button icon="mdi mdi-menu" xl text></w-button>
+					<div v-for="item in items">
+						<w-button text :icon="item.icon"  xl  @click="kaki=item.kaki" :color="item.color">
+
+						</w-button>
+					</div>
+					<!-- 	<w-list :items="items" style="justify-content: center">
+						<template #item="{ item }">
+							<div style="display: flex; justify-content: center">
+								<w-button text :icon="item.icon"  xl  @click="kaki=item.kaki" :color="item.color"></w-button>
+							</div>
+
+
+						</template>
+					</w-list> -->
+
+				</w-flex>
+			</div>
+		</div>
+		<div class="navFull xs2 pal pa2" >
+			<w-card color="primary" title="Вкладки" style="border-radius: 1rem; z-index: 2">
+				<w-list :items="items" style="width: 100%; overflow: scroll" >
 					<template #item="{ item }">
 						<w-button text  lg  @click="kaki=item.kaki" :color="item.color">
 							<w-icon class="mr1" md>{{item.icon}}</w-icon>
@@ -752,5 +774,19 @@ export default {
  .backTableRedDark{
 	 background-color: #692316;
 	 border:2px solid rgba(166, 157, 157, 0.93);
+ }
+ .navFull{
+
+ }
+ .navPhone{
+	 display: none;
+ }
+ .drawer{
+	 width: 100%;
+	 border:solid 1px #dee2e0;
+ }
+ @media screen and (max-width: 768px){
+	 .navFull{display: none}
+	 .navPhone{display: inherit;}
  }
 </style>

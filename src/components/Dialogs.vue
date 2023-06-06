@@ -2,7 +2,7 @@
 	<w-button color="primary" @click="addTaskDialog = true">
 		Поставить задачу
 	</w-button>
-	<w-dialog	v-model="addTaskDialog" width="1000px">
+	<w-dialog	v-model="addTaskDialog" :width="width">
 		<template #title>
 			<w-icon>mdi mdi-pen-plus</w-icon> <span>Постановка задачи</span>
 			<div class="spacer"></div>
@@ -54,6 +54,7 @@
 import VueCal from 'vue-cal'
 import {mapGetters, mapActions} from "vuex";
 import 'vue-cal/dist/vuecal.css'
+
 export default {
 	components:{VueCal},
 	name: "Dialogs",
@@ -64,6 +65,7 @@ export default {
 				return []
 			}
 		},
+		width:500,
 		userId:{
 			type:String,
 			default() {
@@ -211,5 +213,10 @@ export default {
 </script>
 
 <style scoped>
+.dialogClass{
+	width: 1000px;
+	justify-content: center;
+}
+
 
 </style>

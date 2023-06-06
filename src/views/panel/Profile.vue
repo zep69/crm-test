@@ -1,7 +1,10 @@
 <template>
 	<div>
 		<w-flex justify-center class="pa5">
-			<w-card class="xs5 pa2 " style="border-radius: 1rem">
+			<div class="profilePage">
+
+
+			<w-card class="profileData pa2" style="border-radius: 1rem">
 
 				<br>
 				<w-flex  style="height: 100%" column align-center justify-center>
@@ -111,7 +114,7 @@
 
 
 			</w-card>
-			<w-card class="xs7 ml2 primary" style="border-radius: 1rem">
+			<w-card class="statisticData primary" style="border-radius: 1rem">
 				<h1>Ваши показатели</h1>
 				<w-card title="Статистика задач">
 					<DoughnutChart :chartData="testData"/>
@@ -125,6 +128,7 @@
 
 				</w-card>
 			</w-card>
+			</div>
 		</w-flex>
 		<w-overlay
 				v-model="load"
@@ -406,5 +410,40 @@ avatar:hover{
 	height:20rem;
 	-o-object-fit:cover;
 	object-fit:cover;
+}
+.profilePage {
+	display: flex;
+}
+.profileData{
+	width:40vw;
+	min-width: 200px;
+}
+.statisticData{
+	width:50vw;
+	min-width: 400px;
+	margin-left: 10px;
+}
+@media screen and (max-width: 768px){
+	.box{
+		width: 10rem;
+		height: 10rem;
+		border-radius: 5rem;
+	}
+	.box img{
+		width: 10rem;
+		height: 10rem;
+	}
+	.profilePage{
+		display: block;
+		width:100%
+	}
+	.profileData{
+		width:100%
+	}
+	.statisticData{
+		width:100%;
+		margin-left: 0px;
+		margin-top: 4px;
+	}
 }
 </style>
