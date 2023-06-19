@@ -5,6 +5,12 @@
 		<w-button text @click="$router.push('/panel/about'); infoPanel=false">Главная</w-button>
 
 		<div class="spacer"></div>
+		<w-tooltip>
+			<template #activator="{on}">
+				<w-button icon="mdi mdi-download" text xl v-on="on" @click="openLink"></w-button>
+			</template>
+			Скачать приложение на android устройство
+		</w-tooltip>
 		<w-switch v-model="theme" class="ma4" @click="checkTheme(theme)">
 			<template #thumb>
 				<w-icon>
@@ -12,7 +18,7 @@
 				</w-icon>
 			</template>
 		</w-switch>
-		<w-button bg-color="inherit" xl icon="mdi mdi-logout" @click="logout"></w-button>
+		<w-button class="primary" bg-color="inherit" xl icon="mdi mdi-logout" @click="logout"></w-button>
 	</w-toolbar>
 	<main >
 
@@ -51,7 +57,7 @@ export default {
 			{label: 'About', route:"/about"}
 		],
 		itemProgress:[
-			{name:'Постановка задач', action:false},
+			{name:'Постановка задач', action:true},
 			{name:'Топология компании', action:false},
 			{name:'Заявки магазинов', action:false},
 			{name:'Планировка задач и рабочего времени', action:false}
@@ -80,6 +86,9 @@ export default {
 		logout(){
 			localStorage.removeItem("token");
 			this.$router.push("/login");
+		},
+		openLink(){
+			window.open('https://s3.timeweb.com/cd58536-mhand-bucket/crm/app-debug.apk', '_blank')
 		}
 	}
 }

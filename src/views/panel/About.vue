@@ -58,7 +58,7 @@
 										:rows="item.data"
 										v-on:row-dblclick="onRowClick"
 										:search-options="{enabled: true, trigger: 'enter' }"
-										:theme="tabTheme"
+										:theme="checkTheme"
 										:row-style-class="rowStyleClassFn"
 
 								>
@@ -68,6 +68,12 @@
 												<strong>{{ props.row.progress }}%</strong>
 											</w-progress>
 										</div>
+											<div v-if="props.column.field=='startDate'">
+												<span>{{formatDate(props.row.startDate)}}</span>
+											</div>
+											<div v-if="props.column.field=='deadline'">
+												<span>{{formatDate(props.row.deadline)}}</span>
+											</div>
 									</template>
 								</vue-good-table>
 
@@ -182,7 +188,7 @@
 										 :rows="item.data"
 										v-on:row-dblclick="onRowClickCheck"
 										:search-options="{enabled: true, trigger: 'enter' }"
-										:theme="tabTheme"
+										:theme="checkTheme"
 										:row-style-class="rowStyleClassFn"
 
 
@@ -192,6 +198,12 @@
 											<w-progress size="4em" circle :stroke="8" v-model="props.row.progress">
 												<strong>{{ props.row.progress }}%</strong>
 											</w-progress>
+										</div>
+										<div v-if="props.column.field=='startDate'">
+											<span>{{formatDate(props.row.startDate)}}</span>
+										</div>
+										<div v-if="props.column.field=='deadline'">
+											<span>{{formatDate(props.row.deadline)}}</span>
 										</div>
 									</template>
 								</vue-good-table>
@@ -206,7 +218,7 @@
 
 				<w-dialog v-model="dialogTaskControl" width="800">
 					<template #title>
-						<h2>Информация о задачи</h2>
+						<h2 class="primary">Информация о задачи</h2>
 						<div  class="spacer"></div>
 						<w-button lg bg-color="red" color="white" @click="dialogTaskControl=false"><w-icon>mdi mdi-close</w-icon></w-button>
 					</template>
@@ -288,7 +300,13 @@
 				<w-card title="Планировщик" disabled v-if="kaki==='calendar'">
 					<vue-cal style="height: 500px"></vue-cal>
 				</w-card>
+
+				<div v-if="kaki==='taskControl'">
+					<ControlTask :theme-table="tabTheme" :id-profile="userCrm.idProfile"/>
+				</div>
 			</div>
+
+
 
 
 
@@ -303,6 +321,8 @@ import DialogTask from "../../components/DialogTask";
 import {mapGetters, mapActions} from "vuex";
 import ApplicationPage from "../../components/ApplicationPage";
 import CardSimple from "../../components/CardSimple";
+import ControlTask from "../../components/ControlTask";
+
 
 export default {
 	components:{
@@ -310,7 +330,8 @@ export default {
 		VueCal,
 		DialogTask,
 		ApplicationPage,
-		CardSimple
+		CardSimple,
+		ControlTask
 	},
 	data:()=>({
 		dialogTask:false,
@@ -464,6 +485,7 @@ export default {
 		kaki:'task',
 		items:[
 			{label:'Задачи', icon:'mdi mdi-check', kaki:'task', color:'primary'},
+			{label:"Контроль за задачами", icon:'mdi mdi-crown-circle-outline', kaki:'taskControl', color:'primary'},
 			{label:'Заявки', icon:'mdi mdi-format-list-bulleted', kaki:'appl', color:'primary'},
 			{label:'Компания',icon:'mdi mdi-office-building-outline', kaki:'da', color:'orange'},
 			{label: 'Планировщик', icon:'mdi mdi-calendar-clock', kaki: 'calendar', color:'red'}
@@ -478,11 +500,9 @@ export default {
 	computed:{
 		...mapGetters(["departs", "user", "userCrm", "users"]),
 		checkTheme(){
-			if (this.$waveui.theme === 'dark'){
-				this.tabTheme = 'nocturnal'
-			}else{
-				this.tabTheme = 'default'
-			}
+			if(this.$waveui.theme == 'dark'){
+				return 'nocturnal'
+			}else return 'default'
 		},
 
 
@@ -492,13 +512,6 @@ export default {
 		console.log(this.$waveui.theme)
 		console.log("Users", this.users)
 		this.tabTheme = localStorage.tableTheme
-		setInterval(()=>{
-			if (this.$waveui.theme === 'dark'){
-				this.tabTheme = 'nocturnal'
-			}else{
-				this.tabTheme = 'default'
-			}
-		},1000)
 		console.log(localStorage.mail)
 		this.userLoad = await this.getUser(localStorage.mail)
 		console.log(this.user._id)
@@ -510,7 +523,7 @@ export default {
 		await this.getUserCrm(this.user._id)
 		console.log('Ebalo' , this.userCrm)
 		await this.getControlTask()
-		this.changeTime()
+		//this.changeTime()
 
 	},
 	methods:{
@@ -538,6 +551,10 @@ export default {
 				this.tabs[1].data = []
 				console.log('Не нашел задачи')
 			}
+		},
+		formatDate(date){
+			let dateForm = new Date(date).toLocaleString().substr(0,10)
+			return dateForm
 		},
 		async getDoneTask(){
 			let id = this.user._id
@@ -651,18 +668,18 @@ export default {
 		},
 		rowStyleClassFn(row){
 			let date = new Date()
-			let dateArr = row.deadline.split('.')
-			let dateDeadline = new Date(dateArr[2], dateArr[1]-1, dateArr[0])
+			let dateArr = row.deadline
+			let dateDeadline = new Date(dateArr)
 			if(row.status === 'active'){
 				if (dateDeadline> date){
-					if(this.tabTheme == 'default'){
+					if(this.checkTheme == 'default'){
 						return 'backTableGreen'
 					}else{
 						return 'backTableGreenDark'
 					}
 
 				}else{
-					if(this.tabTheme != 'default'){
+					if(this.checkTheme != 'default'){
 						return 'backTableRedDark'
 					}else{
 						return 'backTableRed'
