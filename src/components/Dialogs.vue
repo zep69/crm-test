@@ -26,7 +26,18 @@
 				</w-input>
 
 			</div>
-
+			<div style="display: block; margin-top: 1rem;">
+				<w-checkbox v-model="visitor" label="Добавить контролирующего/наблюдающего за задачей"></w-checkbox>
+				<div v-if="visitor">
+					<w-table :headers="tableHeaders" :items="visitorUsers">
+						<template #item-cell.checkbox="{item, label, header, index}">
+							<div class="text-center">
+								<w-checkbox v-model="item.checkbox"></w-checkbox>
+							</div>
+						</template>
+					</w-table>
+				</div>
+			</div>
 			<!--<div class="mt3" style="display: flex">
 				<w-checkbox class="body" v-model="control" label="Добавить контроллирующего"></w-checkbox>
 				<w-select class="ml2"  outline v-if="control" :items="controllers"></w-select>
@@ -85,6 +96,7 @@ export default {
 		addTaskDialog:false,
 		date:null,
 		user:null,
+		visitor:false,
 		controllers:[
 			{label:'Никита Пикалов'},
 			{label:'Алексей Шляхтин'},
@@ -104,7 +116,8 @@ export default {
 			{name:'Алексей Шляхтин', email:'sa@mhand.ru', position:'Руководитель IT-отдела', checkbox:false},
 			{name:'Олег Петкунас', email:'ak@mhand.ru', position:'Помощник сис.админа/АХО', checkbox:false},
 			{name:'Марат Вагапов', email:'stp@mhand.ru', position:'Специалист тех.поддержки SetRetail/LsFusion', checkbox:false}
-		]
+		],
+		visitorUsers:[]
 	}),
 	computed:{
 		...mapGetters(["users", "userCrm"]),
@@ -123,6 +136,16 @@ export default {
 			let tgChat = this.users[i].tgChat
 			this.users2.push({name: name, email: email, position: position, depart: depart, id: id, checkbox: false, tgChat:tgChat})
 		}
+		for(let i=0; i<this.users.length; i++){
+			let name = this.users[i].firstname + ' '+this.users[i].lastname
+			let email = this.users[i].workMail
+			let position = this.users[i].jobTitle
+			let depart= this.users[i].depart.name
+			let id = this.users[i].idProfile
+			let tgChat = this.users[i].tgChat
+			this.visitorUsers.push({name: name, email: email, position: position, depart: depart, id: id, checkbox: false, tgChat:tgChat})
+		}
+
 		await this.getUserCrm(this.userId)
 		console.log('Cons iz diag', this.userCrm)
 
@@ -139,6 +162,12 @@ export default {
 			for(let i = 0; i<this.users2.length; i++){
 				if(this.users2[i].checkbox == true){
 					userArr.push(this.users2[i])
+				}else continue
+			}
+			let visitorArr = []
+			for(let i=0; i<this.visitorUsers.length;i++){
+				if(this.visitorUsers[i].checkbox == true){
+					visitorArr.push({id: this.visitorUsers[i].id, name:this.visitorUsers[i].name})
 				}else continue
 			}
 			console.log(userArr)
@@ -175,7 +204,8 @@ export default {
 						userTask:userArr[i].id,
 						deadline:new Date(date[0],date[1],date[2]),
 						startDate:new Date(),
-						userName: userArr[i].name
+						userName: userArr[i].name,
+						visitor:visitorArr
 					})
 				})
 				if(taskResp.status == 200){
@@ -204,7 +234,21 @@ export default {
 						'Выполнить до: '+dateSend
 				let url = encodeURI('https://api.telegram.org/bot5058763471:AAE5IYPYmQJUOh4dr25_EZfngyUoQ1Ck1j0/sendmessage?chat_id='+userArr[i].tgChat+'&text='+message)
 				let sendTg = await fetch(url)
+				for(let j=0; j<this.visitorUsers.length; j++){
+					if(this.visitorUsers[j].checkbox == true){
+						let message = 'Вас назанчили контроллирующим/наблюдающим\n' +
+								'За задачей: '+this.task+'\n' +
+								'Задача от: '+this.userCrm.firstname +' '+ this.userCrm.lastname+'\n' +
+								'Задача для: '+userArr[i].name+'\n' +
+								'Описание: ' + this.taskDiscription+'\n'+
+								'Чтобы следить за ходом выполнения задачи, перейдите на сайт http://185.82.24.227'
+						let url = encodeURI('https://api.telegram.org/bot5058763471:AAE5IYPYmQJUOh4dr25_EZfngyUoQ1Ck1j0/sendmessage?chat_id='+this.visitorUsers[j].tgChat+'&text='+message)
+						let response = await fetch(url)
+					}
+				}
 			}
+
+
 
 			alert('Задача поставлена ')
 		},

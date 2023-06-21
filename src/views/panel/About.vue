@@ -487,8 +487,8 @@ export default {
 			{label:'Задачи', icon:'mdi mdi-check', kaki:'task', color:'primary'},
 			{label:"Контроль за задачами", icon:'mdi mdi-crown-circle-outline', kaki:'taskControl', color:'primary'},
 			{label:'Заявки', icon:'mdi mdi-format-list-bulleted', kaki:'appl', color:'primary'},
-			{label:'Компания',icon:'mdi mdi-office-building-outline', kaki:'da', color:'orange'},
-			{label: 'Планировщик', icon:'mdi mdi-calendar-clock', kaki: 'calendar', color:'red'}
+			/*{label:'Компания',icon:'mdi mdi-office-building-outline', kaki:'da', color:'orange'},
+			{label: 'Планировщик', icon:'mdi mdi-calendar-clock', kaki: 'calendar', color:'red'}*/
 		],
 		kakashonki:[
 			{name:'Олег Петкунас', img:'https://s3.timeweb.com/cd58536-mhand-bucket/avatar/photo_2023-03-19_17-26-40.jpg', discription:'Lorem Ipsum - это текст-"рыба", часто используемый в печати и вэб-дизайне. Lorem Ipsum является стандартной "рыбой" для текстов на латинице с начала XVI века. ', telega:'https://t.me/mhand_ak', number:'+79966237451', mail:'ak@mhand.ru'},
@@ -718,7 +718,6 @@ export default {
 				this.tabs[2].data = []
 				this.tabs[3].data = []
 				await this.loadTask()
-				this.changeTime()
 				location.reload()
 				this.selectStatus = ''
 				this.dialogTask = false
@@ -756,7 +755,6 @@ export default {
 
 				await this.getControlTask()
 				await this.loadTask()
-				this.changeTime()
 				alert('Задача удалена')
 
 			}else{
