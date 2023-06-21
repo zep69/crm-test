@@ -88,7 +88,7 @@ export default {
 			this.$router.push("/login");
 		},
 		openLink(){
-			window.open('https://s3.timeweb.com/cd58536-mhand-bucket/crm/app-debug.apk', '_blank')
+			window.open('https://s3.timeweb.com/cd58536-mhand-bucket/crm/tasker.apk', '_blank')
 		}
 	}
 }
