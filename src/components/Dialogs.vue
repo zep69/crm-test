@@ -2,42 +2,45 @@
 	<w-button color="primary" @click="addTaskDialog = true">
 		Поставить задачу
 	</w-button>
-	<w-dialog	v-model="addTaskDialog" :width="width">
+	<w-dialog v-model="addTaskDialog" :width="width">
 		<template #title>
 			<w-icon>mdi mdi-pen-plus</w-icon> <span>Постановка задачи</span>
 			<div class="spacer"></div>
 			<w-button lg bg-color="red" color="white" @click="addTaskDialog = false"><w-icon>mdi mdi-close</w-icon></w-button>
 		</template>
 		<template #default>
-			<!--<span>"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."</span>  -->
-			<h3>Выберите кому хотите поставит задачу</h3>
-			<w-table :headers="tableHeaders" :items="users2">
-				<template #item-cell.checkbox="{item, label, header, index}">
-					<div class="text-center">
-						<w-checkbox v-model="item.checkbox"></w-checkbox>
-					</div>
-				</template>
-			</w-table>
-			<w-input class="mt2" v-model="task" :color="taskColor" :label-color="taskColor" outline>Краткое описание задачи</w-input>
-			<w-textarea class="mt2" outline v-model="taskDiscription" label="Опишите задачу подробней"></w-textarea>
-			<div class="mt2" style="display: flex">
-				<w-input type="date" outline label-position="left" :color="deadlineColor" :label-color="deadlineColor"  v-model="date">
-							Дата дэдлайна
-				</w-input>
+			<div class="contentDialog">
+				<h3>Выберите кому хотите поставит задачу</h3>
+				<w-table :headers="tableHeaders" :items="users2">
+					<template #item-cell.checkbox="{item, label, header, index}">
+						<div class="text-center">
+							<w-checkbox v-model="item.checkbox"></w-checkbox>
+						</div>
+					</template>
+				</w-table>
+				<w-input class="mt2" v-model="task" :color="taskColor" :label-color="taskColor" outline>Краткое описание задачи</w-input>
+				<w-textarea class="mt2" outline v-model="taskDiscription" label="Опишите задачу подробней"></w-textarea>
+				<div class="mt2" style="display: flex">
+					<w-input type="date" outline label-position="left" :color="deadlineColor" :label-color="deadlineColor"  v-model="date">
+						Дата дэдлайна
+					</w-input>
 
-			</div>
-			<div style="display: block; margin-top: 1rem;">
-				<w-checkbox v-model="visitor" label="Добавить контролирующего/наблюдающего за задачей"></w-checkbox>
-				<div v-if="visitor">
-					<w-table :headers="tableHeaders" :items="visitorUsers">
-						<template #item-cell.checkbox="{item, label, header, index}">
-							<div class="text-center">
-								<w-checkbox v-model="item.checkbox"></w-checkbox>
-							</div>
-						</template>
-					</w-table>
+				</div>
+				<div style="display: block; margin-top: 1rem;">
+					<w-checkbox v-model="visitor" label="Добавить контролирующего/наблюдающего за задачей"></w-checkbox>
+					<div v-if="visitor">
+						<w-table :headers="tableHeaders" :items="visitorUsers">
+							<template #item-cell.checkbox="{item, label, header, index}">
+								<div class="text-center">
+									<w-checkbox v-model="item.checkbox"></w-checkbox>
+								</div>
+							</template>
+						</w-table>
+					</div>
 				</div>
 			</div>
+			<!--<span>"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."</span>  -->
+
 			<!--<div class="mt3" style="display: flex">
 				<w-checkbox class="body" v-model="control" label="Добавить контроллирующего"></w-checkbox>
 				<w-select class="ml2"  outline v-if="control" :items="controllers"></w-select>
@@ -261,6 +264,13 @@ export default {
 	width: 1000px;
 	justify-content: center;
 }
-
+.contentDialog{
+	overflow: scroll;
+}
+@media screen and (max-width: 768px){
+	.contentDialog{
+		height: 60vh;
+	}
+}
 
 </style>
