@@ -1,4 +1,7 @@
 <template>
+	<div style="overflow: scroll; height: 500px">
+
+
 	<div class="rowStyle">
 		<h3 class="primary">Ответственный:</h3>
 		<span class="primary">{{$props.task.userName}}</span>
@@ -86,18 +89,57 @@
 					</template>
 				</w-dialog>
 			</div>
+			<div class="ma2 w-divider"></div>
+			<div style="position: relative">
+				<div style="display: flex; justify-content: center">
+					<span>Комментарии</span>
+				</div>
+				<div style="border: solid 1px grey; height: 280px; border-radius: 15px">
+					<div style="height: 230px; overflow: scroll">
+						<div v-for="item in $props.task.comments">
+							<div :style="checkFlex(item.id)">
+								<MessageComponent :date="item.time" :type="checkType(item.id)" :img="item.avatar" :text-message="item.text" :name="item.name" ></MessageComponent>
+							</div>
+
+						</div>
+						<!--<div  style="padding: 10px; display: flex; justify-content: start">
+								<MessageComponent :type="true" img="https://s3.timeweb.com/cd58536-mhand-bucket/avatar/photo_2023-03-19_17-26-40.jpg" name="Олег Даунов" text-message="Я дурачина простофиля"></MessageComponent>
+						</div>
+						<div style="padding: 10px; display: flex; justify-content: end">
+							<MessageComponent :type="false" img="https://s3.timeweb.com/cd58536-mhand-bucket/avatar/ee510c8cd92207f90edbc5b631471cd9.jpeg" name="Никита Пикалов" text-message="Согласен"></MessageComponent>
+						</div>  -->
+
+					</div>
+
+					<div style=" position: absolute; bottom: 10px;width: 100%">
+						<w-flex  class="row justify-center" justify-center>
+							<input type="text" v-model="textComment" @keypress="commentKey" style=" border-radius: 7rem; width: 400px">
+							<w-button icon="mdi mdi-send-circle" text  xl @click="addComment"></w-button>
+						</w-flex>
+
+
+
+					</div>
+				</div>
+
+
+			</div>
 		</template>
 	</w-card>
 
-
+	</div>
 
 </template>
 
 <script>
 import {mapActions, mapGetters} from "vuex";
+import MessageComponent from "./MessageComponent";
 
 export default {
 	name: "DialogTask",
+	components:{
+		MessageComponent
+	},
 	props:{
 		task:{
 			value:Object,
@@ -115,6 +157,7 @@ export default {
 	data: ()=>({
 		selected:[],
 		progress:50,
+		textComment:'',
 		addVisitor:false,
 		text:'dadadsasad mjadni abd akshdb habd sajhhdh kjksbd ksndk a',
 		items: [
@@ -129,11 +172,12 @@ export default {
 		]
 	}),
 	computed:{
-		...mapGetters(["users"])
+		...mapGetters(["users","userCrm"])
 	},
 	async mounted() {
 		await this.getUsers()
 		console.log(this.users)
+		console.log(this.$props.task)
 		for(let i=0;i<this.users.length;i++){
 			this.users[i].checkbox = false
 			this.users[i].name = this.users[i].firstname + ' ' + this.users[i].lastname
@@ -149,9 +193,36 @@ export default {
 			}
 		}
 
+
 	},
 	methods:{
-		...mapActions(["getUsers"]),
+		...mapActions(["getUsers","getUserCrm"]),
+		async addComment(){
+			let response = await fetch(process.env.VUE_APP_BACK_HTTP+'crm/addComment/'+this.$props.task._id,{
+				method:'PATCH',
+				headers:{
+					Accept: "application/json",
+					"Content-Type": "application/json",
+				},
+				body:JSON.stringify({
+					id:this.userCrm.idProfile,
+					avatar:this.userCrm.linkAvatar,
+					time:new Date(),
+					name:this.userCrm.firstname + ' '+this.userCrm.lastname,
+					text:this.textComment,
+				})
+			})
+			if(response.status == 200){
+				alert('Комемнтарий для задачи добавлен')
+				window.location.reload()
+			}else alert('Ошибка')
+		},
+		async commentKey(e){
+			let key = e.keyCode
+			if(key===13){
+				await this.addComment()
+			}
+		},
 		async addVisitors(task){
 			let arr = []
 			for(let i = 0; i<this.users.length; i++){
@@ -191,6 +262,20 @@ export default {
 			}
 
 
+		},
+		checkType(id){
+			if(id == this.userCrm.idProfile){
+				return false
+			}else{
+				return true
+			}
+		},
+		checkFlex(id){
+			if(id == this.userCrm.idProfile){
+				return "padding: 10px; display: flex; justify-content: end"
+			}else{
+				return "padding: 10px; display: flex; justify-content: start"
+			}
 		}
 
 	}

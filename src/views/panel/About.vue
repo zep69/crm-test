@@ -95,78 +95,123 @@
 									</w-button>
 								</template>
 								<template #default>
-									<div style="display: flex; justify-content: start">
-										<h3>Задача от: </h3><span>{{selectRow.author.name}}</span>
-									</div>
-									<div style="display: flex; justify-content: start">
-										<h3>Задача: </h3><span>{{selectRow.nameTask}}</span>
-									</div>
-									<div style="display: flex; justify-content: start">
-										<w-textarea label="Описание задачи" label-position="left" class="mt2" readonly outline :model-value="selectRow.discriptionTask"></w-textarea>
-									</div>
-									<w-divider class="ma3" color="green"/>
-									<div style="display: flex; justify-content: center">
-										<h3>Ход выполнения</h3>
-									</div>
-									<div style="display: flex">
-										<div class="xs3 pa2">
-											<w-card title="Список">
+									<div style="overflow: scroll; height: 500px">
+										<div style="display: flex; justify-content: start">
+											<h3>Задача от: </h3><span>{{selectRow.author.name}}</span>
+										</div>
+										<div style="display: flex; justify-content: start">
+											<h3>Задача: </h3><span>{{selectRow.nameTask}}</span>
+										</div>
+										<div style="display: flex; justify-content: start">
+											<w-textarea label="Описание задачи" label-position="left" class="mt2" readonly outline :model-value="selectRow.discriptionTask"></w-textarea>
+										</div>
+										<w-divider class="ma3" color="green"/>
+										<div style="display: flex; justify-content: center">
+											<h3>Ход выполнения</h3>
+										</div>
+										<div style="display: flex">
+											<div class="xs3 pa2">
+												<w-card title="Список">
+													<template #default>
+														<div>
+															<w-checkboxes :items="selectRow.list" v-model="selectRow.selected"></w-checkboxes>
+															<w-divider color="blue" class="ma2"/>
+															<div style="display: flex; justify-content: center">
+																<w-button class="plusList" text color="blue" @click="addToListDialog = true"><w-icon>mdi mdi-plus</w-icon> Добавить пункт </w-button>
+																<w-button class="plusListMobile" text color="blue" @click="addToListDialog = true"><w-icon>mdi mdi-plus</w-icon> </w-button>
+															</div>
+
+														</div>
+
+														<w-dialog v-model="addToListDialog" width="250px">
+															<template #title>
+																<w-flex justify-space-between >
+																	Добавить пункт
+																	<w-icon @click="addToListDialog=false">mdi mdi-close</w-icon>
+																</w-flex>
+
+
+															</template>
+															<template #default>
+																<w-input v-model="newListComponent" outline></w-input>
+															</template>
+															<template #actions>
+																<w-flex justify-end>
+																	<w-button @click="pushToList">Добавить</w-button>
+																</w-flex>
+															</template>
+														</w-dialog>
+													</template>
+												</w-card>
+											</div>
+											<div class="xs9 pa2">
+												<w-card title="Заметки выполнения">
+													<template #default>
+														<w-textarea v-model="selectRow.notes" outline></w-textarea>
+													</template>
+												</w-card>
+
+											</div>
+											<div class="xs3 pa2">
+												<w-card title="Сменить статус">
+
+													<w-select v-model="selectStatus" :items="statuses" item-label-key="label" item-value-key="label" ></w-select>
+
+												</w-card>
+											</div>
+
+										</div>
+										<w-flex justify-center align-center>
+											<w-card>
+												<template #title>
+													На сколько готова задача
+												</template>
 												<template #default>
-													<w-checkboxes :items="selectRow.list" v-model="selectRow.selected"></w-checkboxes>
-													<w-divider color="blue" class="ma2"/>
-													<w-button text color="blue" @click="addToListDialog = true"><w-icon>mdi mdi-plus</w-icon> Добавить пункт </w-button>
-													<w-dialog v-model="addToListDialog" width="250px">
-														<template #title>
-															<w-flex justify-space-between>
-																Добавить пункт
-																<w-icon @click="addToListDialog=false">mdi mdi-close</w-icon>
-															</w-flex>
-
-
-														</template>
-														<template #default>
-															<w-input v-model="newListComponent" outline></w-input>
-														</template>
-														<template #actions>
-															<w-flex justify-end>
-																<w-button @click="pushToList">Добавить</w-button>
-															</w-flex>
-														</template>
-													</w-dialog>
+													<w-slider v-model="selectRow.progress" step="1" thumb-label></w-slider>
 												</template>
 											</w-card>
-										</div>
-										<div class="xs9 pa2">
-											<w-card title="Заметки выполнения">
-												<template #default>
-													<w-textarea v-model="selectRow.notes" outline></w-textarea>
-												</template>
-											</w-card>
+										</w-flex>
+										<div class="ma2 w-divider"></div>
+										<div style="position: relative">
+											<div style="display: flex; justify-content: center">
+												<span>Комментарии</span>
+											</div>
+											<div style="border: solid 1px grey; height: 280px; border-radius: 15px">
+												<div style="height: 230px; overflow: scroll">
+													<div v-for="item in selectRow.comments">
+														<div :style="checkFlex(item.id)">
+															<MessageComponent :date="item.time" :type="checkType(item.id)" :img="item.avatar" :text-message="item.text" :name="item.name" ></MessageComponent>
+														</div>
+
+													</div>
+													<!--<div  style="padding: 10px; display: flex; justify-content: start">
+															<MessageComponent :type="true" img="https://s3.timeweb.com/cd58536-mhand-bucket/avatar/photo_2023-03-19_17-26-40.jpg" name="Олег Даунов" text-message="Я дурачина простофиля"></MessageComponent>
+													</div>
+													<div style="padding: 10px; display: flex; justify-content: end">
+														<MessageComponent :type="false" img="https://s3.timeweb.com/cd58536-mhand-bucket/avatar/ee510c8cd92207f90edbc5b631471cd9.jpeg" name="Никита Пикалов" text-message="Согласен"></MessageComponent>
+													</div>  -->
+
+												</div>
+
+												<div style=" position: absolute; bottom: 10px;width: 100%">
+													<w-flex  class="row justify-center" justify-center>
+														<input type="text" v-model="textComment" @keypress="commentKey" style=" border-radius: 7rem; width: 400px">
+														<w-button icon="mdi mdi-send-circle" text  xl @click="addComment"></w-button>
+													</w-flex>
+
+
+
+												</div>
+											</div>
+
 
 										</div>
-										<div class="xs3 pa2">
-											<w-card title="Сменить статус">
-
-												<w-select v-model="selectStatus" :items="statuses" item-label-key="label" item-value-key="label" ></w-select>
-
-											</w-card>
-										</div>
-
 									</div>
-									<w-flex justify-center align-center>
-										<w-card>
-											<template #title>
-												На сколько готова задача
-											</template>
-											<template #default>
-												<w-slider v-model="selectRow.progress" step="1" thumb-label></w-slider>
-											</template>
-										</w-card>
-									</w-flex>
+
 								</template>
 								<template #actions>
 									<div class="spacer"></div>
-									<w-button color="black" v-if="selectRow.status == 'active'" bg-color="green" @click="updateTask(selectRow);dialogTask=false">Подтвердить изменения </w-button>
+									<w-button color="black" v-if="selectRow.status == 'active'" bg-color="green" @click="updateTask(selectRow)">Подтвердить изменения </w-button>
 								</template>
 							</w-dialog>
 						</template>
@@ -218,7 +263,7 @@
 
 				<w-dialog v-model="dialogTaskControl" width="800">
 					<template #title>
-						<h2 class="primary">Информация о задачи</h2>
+						<h2 class="primary">Информация о задаче</h2>
 						<div  class="spacer"></div>
 						<w-button lg bg-color="red" color="white" @click="dialogTaskControl=false"><w-icon>mdi mdi-close</w-icon></w-button>
 					</template>
@@ -293,6 +338,9 @@
 									<h3>Deafult</h3>
 								</template>
 							</CardSimple>
+							<MessageComponent style="margin-top: 2rem;"></MessageComponent>
+							<vue-element-chat-gpt></vue-element-chat-gpt>
+							<vue-gpt-t-able></vue-gpt-t-able>
 						</div>
 					</template>
 				</w-card>
@@ -322,6 +370,9 @@ import {mapGetters, mapActions} from "vuex";
 import ApplicationPage from "../../components/ApplicationPage";
 import CardSimple from "../../components/CardSimple";
 import ControlTask from "../../components/ControlTask";
+import MessageComponent from "../../components/MessageComponent";
+import vueElementChatGpt from "../../components/vueElementChatGpt";
+import vueGptTAble from "../../components/vueGptTAble";
 
 
 export default {
@@ -331,7 +382,10 @@ export default {
 		DialogTask,
 		ApplicationPage,
 		CardSimple,
-		ControlTask
+		ControlTask,
+		MessageComponent,
+		vueElementChatGpt,
+		vueGptTAble
 	},
 	data:()=>({
 		dialogTask:false,
@@ -496,6 +550,7 @@ export default {
 		],
 		departs2:Proxy,
 		dialogTaskControl:false,
+		textComment:'',
 	}),
 	computed:{
 		...mapGetters(["departs", "user", "userCrm", "users"]),
@@ -528,6 +583,46 @@ export default {
 	},
 	methods:{
 		...mapActions(['getUser', "getDeparts", "getUserCrm", "getUsers"]),
+		checkFlex(id){
+			if(id == this.userCrm.idProfile){
+				return "padding: 10px; display: flex; justify-content: end"
+			}else{
+				return "padding: 10px; display: flex; justify-content: start"
+			}
+		},
+		checkType(id){
+			if(id == this.userCrm.idProfile){
+				return false
+			}else{
+				return true
+			}
+		},
+		async commentKey(e){
+			let key = e.keyCode
+			if(key===13){
+				await this.addComment()
+			}
+		},
+		async addComment(){
+			let response = await fetch(process.env.VUE_APP_BACK_HTTP+'crm/addComment/'+this.selectRow._id,{
+				method:'PATCH',
+				headers:{
+					Accept: "application/json",
+					"Content-Type": "application/json",
+				},
+				body:JSON.stringify({
+					id:this.userCrm.idProfile,
+					avatar:this.userCrm.linkAvatar,
+					time:new Date(),
+					name:this.userCrm.firstname + ' '+this.userCrm.lastname,
+					text:this.textComment,
+				})
+			})
+			if(response.status == 200){
+				alert('Комемнтарий для задачи добавлен добавлен')
+				window.location.reload()
+			}else alert('Ошибка')
+		},
 		async getActiveTask(){
 			let id = this.user._id
 			let resp = await fetch(process.env.VUE_APP_BACK_HTTP+"crm/getTaskActive/"+id)
@@ -696,34 +791,48 @@ export default {
 					idStatus = this.statuses[i].value
 				}else continue
 			}
-			let resp = await fetch(process.env.VUE_APP_BACK_HTTP+"crm/updateTask/"+task._id, {
-				method:"PATCH",
-				headers:{
-					Accept: "application/json",
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({
-					status:idStatus,
-					notes:task.notes,
-					progress:task.progress,
-					nameStatus:this.selectStatus,
-					list:task.list,
-					selected:task.selected,
+
+			if (this.selectStatus){
+				let resp = await fetch(process.env.VUE_APP_BACK_HTTP+"crm/updateTask/"+task._id, {
+					method:"PATCH",
+					headers:{
+						Accept: "application/json",
+						"Content-Type": "application/json",
+					},
+					body: JSON.stringify({
+						status:idStatus,
+						notes:task.notes,
+						progress:task.progress,
+						nameStatus:this.selectStatus,
+						list:task.list,
+						selected:task.selected,
+					})
 				})
-			})
-			if (resp.status == 200){
-				alert('Задача обновлена')
-				this.tabs[0].data = []
-				this.tabs[1].data = []
-				this.tabs[2].data = []
-				this.tabs[3].data = []
-				await this.loadTask()
-				location.reload()
-				this.selectStatus = ''
-				this.dialogTask = false
-			}else{
-				alert('Error')
+				if (resp.status == 200){
+					let requestProfile = await fetch(process.env.VUE_APP_BACK_HTTP+'crm/getProfile/'+task.author.id)
+					let data = await requestProfile.json()
+					let message = 'Статус поставленной задачи: '+task.nameTask+'\n' +
+							'Для: ' +task.userName+'\n'+
+							'Был изменена на: '+this.selectStatus
+					let url = encodeURI('https://api.telegram.org/bot5058763471:AAE5IYPYmQJUOh4dr25_EZfngyUoQ1Ck1j0/sendmessage?chat_id='+data.tgChat+'&text='+message)
+					let goTg = await fetch(url)
+					alert('Задача обновлена')
+					this.tabs[0].data = []
+					this.tabs[1].data = []
+					this.tabs[2].data = []
+					this.tabs[3].data = []
+					await this.loadTask()
+					location.reload()
+					this.dialogTask=false
+					this.selectStatus = ''
+					this.dialogTask = false
+				}else{
+					alert('Error')
+				}
+			}else {
+				alert('Ошибка! Поставьте статус!')
 			}
+
 		},
 		async deleteTask(id, row){
 			let response = await fetch(process.env.VUE_APP_BACK_HTTP+'crm/deleteTask',{
@@ -800,8 +909,17 @@ export default {
 	 width: 100%;
 	 border:solid 1px #dee2e0;
  }
+ .plusList{
+
+ }
+ .plusListMobile{
+	 display: none;
+ }
  @media screen and (max-width: 768px){
 	 .navFull{display: none}
 	 .navPhone{display: inherit;}
+	 .plusList{display: none}
+	 .plusListMobile{display: inherit}
+
  }
 </style>
